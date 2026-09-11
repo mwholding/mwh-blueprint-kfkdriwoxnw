@@ -1,8 +1,9 @@
 # Intranet blueprint
 
-**This repository is a template.** Do not develop in it: copy it per brand (step 1 of
-[SETUP.md](SETUP.md)), then make that copy yours. Improvements that every brand should get
-are made here and pulled into the copies deliberately, not the other way around.
+**This repository is a GitHub template.** Do not develop in it: press **Use this template**
+to give a brand its own copy (step 1 of [SETUP.md](SETUP.md)), then make that copy theirs.
+Improvements every brand should get are made here and pulled into the copies deliberately,
+not the other way around.
 
 A small, complete intranet you can host yourself: a home page, a knowledge base, an access
 management app, and — the part that makes it worth copying — a way for colleagues to build

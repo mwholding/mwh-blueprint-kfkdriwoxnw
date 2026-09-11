@@ -24,23 +24,23 @@ function, which is how all access control here works.
 
 ## Step 1 — Create your repository
 
-This repository is the starting point, not something to work in directly: every brand gets
-its own copy, because every copy carries its own domains, branding and access.
+This repository is a GitHub template, not somewhere to work directly: every brand gets its
+own copy, because every copy carries its own domains, branding and access.
 
-**If this repository is marked as a template** (a green "Use this template" button at the
-top right):
-
-1. Click **Use this template** → **Create a new repository**.
+1. On <https://github.com/mwholding/mwh-blueprint>, click the green **Use this template**
+   button at the top right → **Create a new repository**.
 2. **Owner**: your organisation. **Repository name**: for example `acme-intranet`.
    **Visibility**: **Private**. → **Create repository**.
-3. Clone your new repository to your machine, or edit the files straight in GitHub.
+3. That is it. Your copy starts with its own history, no connection back to this repository
+   and nothing to delete. Clone it to your machine, or edit the files straight in GitHub for
+   the three changes in step 2.
 
-**Otherwise**, copy it by hand once:
+No access to the template, or you would rather not use the button? Copy it once by hand:
 
 ```bash
 git clone --depth 1 https://github.com/mwholding/mwh-blueprint acme-intranet
 cd acme-intranet
-rm -rf .git
+rm -rf .git          # start your own history instead of carrying the blueprint's
 git init
 git add .
 git commit -m "Intranet from the blueprint"
@@ -54,14 +54,6 @@ unchecked) and push to it:
 git remote add origin https://github.com/<org>/<repo>.git
 git push -u origin main
 ```
-
-Removing `.git` is the point of that sequence: your intranet starts its own history instead
-of carrying the blueprint's, and there is no accidental path back to this repository.
-
-No git on your machine? Download this repository as a ZIP (**Code → Download ZIP**), create
-the new repository in the browser, and use **Add file → Upload files**. Dot-folders such as
-`.github` do not always survive a browser upload, so check afterwards that
-`.github/workflows/deploy.yml` is there.
 
 ## Step 2 — Make it yours (3 files)
 
