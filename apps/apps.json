@@ -1,0 +1,28 @@
+[
+  {
+    "name": "Knowledge base",
+    "desc": "Guides, checklists and reference pages in folders, with attachments and full-text search. Readable and editable from a Langdock chat as well as in the browser.",
+    "url": "/apps/wiki/"
+  },
+  {
+    "name": "My apps",
+    "desc": "The small apps colleagues built themselves by describing them in a Langdock chat. Open yours, or the ones shared with you.",
+    "url": "/apps/my-apps/"
+  },
+  {
+    "name": "AI assistant",
+    "desc": "The approved assistant for company data: chat, drafting, and the connection to this intranet's own knowledge base and app builder.",
+    "url": "https://app.langdock.com/"
+  },
+  {
+    "name": "Access management",
+    "desc": "Who may read or write what: groups, permissions, and which apps are open to all staff. No deploy needed to change access.",
+    "url": "/apps/access-admin/"
+  },
+  {
+    "name": "Your next app",
+    "desc": "Copy an existing folder under apps/, register it in access management, and it appears here. See ADDING-AN-APP.md.",
+    "url": "/apps/",
+    "status": "planned"
+  }
+]

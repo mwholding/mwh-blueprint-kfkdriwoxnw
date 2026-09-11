@@ -1,0 +1,13 @@
+{
+  "name": "intranet-api",
+  "version": "1.0.0",
+  "private": true,
+  "main": "GetRoles/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@azure/storage-blob": "^12.24.0",
+    "jose": "^5.9.6"
+  }
+}

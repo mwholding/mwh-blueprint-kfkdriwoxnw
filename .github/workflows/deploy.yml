@@ -1,0 +1,56 @@
+# Deploys this repository to Azure Static Web Apps on every push to main, and builds a
+# throwaway preview environment for every pull request (closed again when the PR closes).
+#
+# The one secret this needs is the Static Web App's deployment token, stored as the repository
+# secret AZURE_STATIC_WEB_APPS_API_TOKEN — see SETUP.md step 4. Nothing else in this workflow
+# needs credentials.
+name: Deploy to Azure Static Web Apps
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches: [main]
+
+# One deployment per branch at a time. Two runs uploading to the same environment make Azure
+# cancel the loser, which shows up as a red "Deployment Canceled" even though the other run
+# deployed the very same commit. This makes the superseded run stop in GitHub instead.
+concurrency:
+  group: swa-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_and_deploy:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Build and deploy
+    steps:
+      - uses: actions/checkout@v4
+
+      # One route rule per apps/<name>/ folder, each requiring the role <name>. Needs no
+      # secrets: it reads the repo, not Blob Storage. Who holds that role is decided at login
+      # from access.json, so open-vs-restricted stays a runtime switch with no deploy.
+      - name: Generate per-app route rules
+        run: node misc/generate-app-routes.js
+
+      - name: Build and deploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }} # lets the action comment the preview URL on PRs
+          action: upload
+          app_location: "/"    # the static site lives at the repository root
+          api_location: "api"  # the managed Azure Functions
+          output_location: ""  # no build step: plain HTML, CSS and JavaScript
+
+  close_pull_request:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close pull request environment
+    steps:
+      - uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: close
+          app_location: "/"

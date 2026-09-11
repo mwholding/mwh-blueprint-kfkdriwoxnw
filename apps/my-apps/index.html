@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My apps — Intranet</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="stylesheet" href="/assets/app-kit.css">
+<style>
+.pagehead{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.pagehead p{max-width:64ch;color:var(--brand-mute)}
+.howto-open{flex:none;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.tile{display:flex;flex-direction:column;gap:8px;background:var(--brand-paper);border:1px solid var(--brand-line);padding:20px 22px;color:var(--brand-ink);text-decoration:none}
+.tile:hover{border-color:var(--brand-accent)}
+.tile .top{display:flex;align-items:center;gap:10px}
+.tile .icon{font-size:22px;line-height:1}
+.tile h2{margin:0;font-size:17px;font-weight:700}
+.tile p{margin:0;font-size:13.5px;color:var(--brand-mute);line-height:1.5}
+.tile .meta{margin-top:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--brand-mute)}
+.empty{background:var(--brand-paper);border:1px solid var(--brand-line);padding:28px;max-width:640px;font-size:14.5px;line-height:1.6;color:var(--brand-mute)}
+.empty strong{color:var(--brand-ink)}
+
+/* ---- How-to side panel ---- */
+.howto-backdrop{position:fixed;inset:0;background:rgba(15,15,15,.28);opacity:0;visibility:hidden;transition:opacity .2s ease;z-index:50}
+.howto-backdrop.open{opacity:1;visibility:visible}
+.howto{position:fixed;top:0;right:0;height:100%;width:clamp(320px,36vw,480px);background:var(--brand-soft);
+  border-left:1px solid var(--brand-line);transform:translateX(100%);transition:transform .24s ease;z-index:51;
+  display:flex;flex-direction:column}
+.howto.open{transform:translateX(0)}
+.howto-head{display:flex;align-items:center;gap:10px;padding:18px 22px;background:var(--brand-paper);border-bottom:1px solid var(--brand-line)}
+.howto-head h2{margin:0;font-size:16px;font-weight:700}
+.howto-head .x{margin-left:auto;background:none;border:0;color:var(--brand-mute);font-size:22px;line-height:1;cursor:pointer;padding:2px 6px}
+.howto-head .x:hover{color:var(--brand-accent)}
+.howto-body{overflow-y:auto;padding:22px;display:flex;flex-direction:column;gap:22px}
+.howto-body h3{margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--brand-mute)}
+.howto-body p{margin:0;font-size:13.5px;line-height:1.55;color:var(--brand-ink)}
+
+.note{display:flex;gap:11px;background:var(--brand-paper);border:1px solid var(--brand-line);border-left:3px solid var(--brand-accent);padding:14px 16px}
+.note .ico{flex:none;font-size:16px;line-height:1.4}
+.note p{font-size:13px;line-height:1.55;color:var(--brand-mute)}
+.note code{background:var(--brand-accent-tint);color:var(--brand-accent);border:0;padding:1px 6px;font-weight:700}
+.note strong{color:var(--brand-ink)}
+
+.steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px}
+.steps li{display:flex;gap:10px;font-size:13px;line-height:1.5;color:var(--brand-mute)}
+.steps li .ico{flex:none;font-size:14px}
+.steps li strong{color:var(--brand-ink)}
+.steps code{background:var(--brand-paper);border:1px solid var(--brand-line);padding:0 5px;font-size:12px}
+
+.ex{display:flex;flex-direction:column;gap:10px}
+.card{background:var(--brand-paper);border:1px solid var(--brand-line)}
+.card .bar{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--brand-soft)}
+.card .bar .ico{font-size:15px}
+.card .bar .t{font-size:13.5px;font-weight:700}
+.card .bar .copy{margin-left:auto;display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--brand-line);
+  border-radius:2px;color:var(--brand-mute);font-size:11.5px;font-weight:700;padding:5px 10px;cursor:pointer}
+.card .bar .copy:hover{border-color:var(--brand-accent);color:var(--brand-accent)}
+.card .bar .copy.done{border-color:var(--brand-accent);color:var(--brand-accent)}
+.card .prompt{margin:0;padding:12px 14px;font-size:12.5px;line-height:1.55;color:var(--brand-mute);white-space:pre-wrap}
+</style>
+</head>
+<body>
+<header class="app-header">
+  <div class="wrap">
+    <a class="back" href="/">
+      <img src="/assets/logo.svg" alt="">
+      <span>&larr; Back to intranet</span>
+    </a>
+    <span class="apptitle">My apps</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="pagehead">
+    <div>
+      <h1>My apps</h1>
+      <p>Small “vibe coding” apps built in
+      <a href="https://app.langdock.com/" target="_blank" rel="noopener">Langdock</a> — just tag the
+      <strong>@Intranet</strong> integration to create, update, delete or share your app with others.
+      Everything is hosted on the company's own infrastructure and reachable only through
+      single sign-on. This page lists the apps you can open.</p>
+    </div>
+    <button class="howto-open" id="howto-open" type="button">💡 How to build an app</button>
+  </div>
+  <div id="content"><p style="color:var(--brand-mute)">Loading…</p></div>
+</main>
+
+<!-- How-to side panel -->
+<div class="howto-backdrop" id="howto-backdrop"></div>
+<aside class="howto" id="howto" aria-hidden="true" aria-label="How to build an app">
+  <div class="howto-head">
+    <span>💡</span>
+    <h2>Build your own app</h2>
+    <button class="x" id="howto-close" type="button" aria-label="Close">&times;</button>
+  </div>
+  <div class="howto-body">
+    <div class="note">
+      <span class="ico">📌</span>
+      <p><strong>First, tag the intranet in your chat.</strong> In Langdock, type <code>@Intranet</code>
+      and pick the Intranet integration so Langdock is allowed to build and save the app for you.
+      Without that tag it can only talk — it can't create anything.</p>
+    </div>
+
+    <div>
+      <h3>How it works</h3>
+      <ul class="steps">
+        <li><span class="ico">①</span><span>Open a <strong>Langdock</strong> chat and tag <code>@Intranet</code>.</span></li>
+        <li><span class="ico">②</span><span>Describe the tool you want in plain words — copy an example below to start.</span></li>
+        <li><span class="ico">③</span><span>Langdock builds it and replies with a link. It's <strong>live immediately</strong> and appears here under <em>My apps</em>.</span></li>
+      </ul>
+    </div>
+
+    <div>
+      <h3>Good to know</h3>
+      <ul class="steps">
+        <li><span class="ico">🔒</span><span><strong>Private until you share.</strong> When ready, say <em>"share this with everyone on the intranet"</em> or <em>"share it with anna@… and ben@…"</em>.</span></li>
+        <li><span class="ico">💾</span><span><strong>It remembers data for everyone</strong> who opens it — and can store PDFs and images too.</span></li>
+        <li><span class="ico">✏️</span><span><strong>Change it any time</strong> with another message: <em>"add a column for supplier"</em>, <em>"make overdue rows red"</em>.</span></li>
+        <li><span class="ico">↩️</span><span><strong>Made a mess?</strong> Say <em>"roll back to the previous version"</em> — every version is kept.</span></li>
+      </ul>
+    </div>
+
+    <div>
+      <h3>Example prompts — copy &amp; paste</h3>
+      <div class="ex" id="examples"></div>
+    </div>
+  </div>
+</aside>
+
+<script>
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+/* ---- example prompts (each copied verbatim, so kept as plain text) ---- */
+const EXAMPLES = [
+  { icon: "📊", title: "Team Budget Tracker", text:
+    "Build me an app called 'Team Budget Tracker' where I add budget lines (category, planned amount, actual amount, currency). Show planned vs actual per category with a bar for each and a grand total, keep different currencies separate (don't convert), and let me edit and delete lines. Save everything so my whole team sees the same numbers." },
+  { icon: "🏗️", title: "CAPEX Requests", text:
+    "Create a 'CAPEX Requests' app: a form for project name, amount, currency, business case and expected payback. Each submission goes into a shared list with a status I can switch between New / Approved / Rejected, shown as a table with a filter by status and the submitter's name filled in from their login." },
+  { icon: "🏢", title: "Site Comparison", text:
+    "Build a 'Site Comparison' app for evaluating store locations. I add sites (name, city, size m², monthly rent, footfall estimate, parking) and rate each 1–5 on accessibility, visibility and competition. Save them and show a ranked table by total score, with a button to copy the table." },
+  { icon: "📅", title: "Lease Deadlines", text:
+    "Create a 'Lease Deadlines' app where I add each lease (store, landlord, end date, notice period in months) and attach the lease PDF. Calculate the last date to give notice and highlight anything due within 6 months in red. Save and share with my team." },
+  { icon: "✅", title: "Store Opening Checklist", text:
+    "Build a 'Store Opening Checklist': steps grouped by phase (Legal, Fit-out, Staffing, Go-live), each tickable with who did it and the date, plus a progress bar per phase. Save it so the whole project team sees the same ticks." },
+  { icon: "📌", title: "Meeting Actions", text:
+    "Make a 'Meeting Actions' app: add action items (task, owner email, due date, status) during a meeting, show an open-items table sorted by due date with overdue ones flagged red. Anyone with access can add and update." },
+  { icon: "🗳️", title: "Lunch Vote", text:
+    "Create a 'Lunch Vote' app: I set a few options, everyone with the link votes once (remember them by their login so nobody double-votes), and show a live bar chart of the results." },
+];
+
+document.getElementById("examples").innerHTML = EXAMPLES.map((e, i) => `
+  <div class="card">
+    <div class="bar">
+      <span class="ico">${esc(e.icon)}</span>
+      <span class="t">${esc(e.title)}</span>
+      <button class="copy" type="button" data-i="${i}">📋 Copy</button>
+    </div>
+    <p class="prompt">${esc(e.text)}</p>
+  </div>`).join("");
+
+document.getElementById("examples").addEventListener("click", async (ev) => {
+  const btn = ev.target.closest(".copy");
+  if (!btn) return;
+  const text = EXAMPLES[Number(btn.dataset.i)].text;
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch {}
+    ta.remove();
+  }
+  btn.classList.add("done");
+  btn.textContent = "✓ Copied";
+  setTimeout(() => { btn.classList.remove("done"); btn.textContent = "📋 Copy"; }, 1600);
+});
+
+/* ---- drawer open/close ---- */
+const drawer = document.getElementById("howto");
+const backdrop = document.getElementById("howto-backdrop");
+function openDrawer() { drawer.classList.add("open"); backdrop.classList.add("open"); drawer.setAttribute("aria-hidden", "false"); }
+function closeDrawer() { drawer.classList.remove("open"); backdrop.classList.remove("open"); drawer.setAttribute("aria-hidden", "true"); }
+document.getElementById("howto-open").addEventListener("click", openDrawer);
+document.getElementById("howto-close").addEventListener("click", closeDrawer);
+backdrop.addEventListener("click", closeDrawer);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
+
+/* ---- app directory ---- */
+(async () => {
+  const el = document.getElementById("content");
+  let data;
+  try {
+    const res = await fetch("/api/UserApps");
+    if (!res.ok) throw new Error(res.status);
+    data = await res.json();
+  } catch (e) {
+    el.innerHTML = '<div class="empty">Could not load the app directory. Try reloading; if it persists, check <a href="/.auth/me">/.auth/me</a>.</div>';
+    return;
+  }
+  if (!data.apps || data.apps.length === 0) {
+    el.innerHTML = '<div class="empty"><strong>No apps yet.</strong> Hit <em>“How to build an app”</em> above, ' +
+      'copy one of the example prompts into a Langdock chat (tagged <code>@Intranet</code>), and your first app appears here — live immediately.</div>';
+    return;
+  }
+  el.innerHTML = '<div class="grid">' + data.apps.map((a) => `
+    <a class="tile" href="${esc(a.url)}" target="_blank" rel="noopener">
+      <div class="top">
+        ${a.icon ? `<span class="icon">${esc(a.icon)}</span>` : ""}
+        <h2>${esc(a.name)}</h2>
+      </div>
+      <p>${esc(a.description) || "No description."}</p>
+      <div class="meta">
+        ${a.owned ? '<span class="chip accent">yours</span>' : `<span class="chip">${esc(a.owner)}</span>`}
+        ${a.restricted ? '<span class="chip">restricted</span>' : ""}
+        <span>updated ${esc((a.updatedAt || "").slice(0, 10))}</span>
+      </div>
+    </a>`).join("") + "</div>";
+})();
+</script>
+</body>
+</html>

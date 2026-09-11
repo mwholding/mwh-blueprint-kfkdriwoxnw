@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Knowledge base — Intranet</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<!-- Only the brand tokens, not the whole app kit: this app brings its own base styles, and
+     app-kit.css would fight them (its own button and label rules). Rebranding still works,
+     because every colour below is one of the --brand-* tokens. -->
+<link rel="stylesheet" href="/assets/brand.css">
+<style>
+:root{
+  --accent:var(--brand-accent);--accent-mid:var(--brand-accent-mid);--accent-light:var(--brand-accent-tint);--ink:var(--brand-ink);--stone-700:var(--brand-mute);
+  --stone-400:var(--brand-line);--stone-100:var(--brand-soft);--font:var(--font-sans);
+  --gutter:clamp(20px,4vw,56px);--max:1240px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--stone-100);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+button,input,textarea,select{font-family:inherit}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 var(--gutter)}
+
+header{background:#fff;border-bottom:1px solid var(--stone-100)}
+header .wrap{height:56px;display:flex;align-items:center;gap:10px}
+.brand{display:flex;align-items:center;gap:8px;color:var(--stone-700);font-size:12px;text-decoration:none;transition:color 150ms}
+.brand img{height:16px;width:auto;display:block;opacity:.8;transition:opacity 150ms}
+.brand:hover{color:var(--accent);text-decoration:underline}
+.brand:hover img{opacity:1}
+.apptitle{margin-left:auto;font-size:13px;font-weight:500;color:var(--stone-700)}
+
+main{padding-top:clamp(40px,5vw,64px);padding-bottom:clamp(56px,7vw,96px)}
+.pagehead{margin-bottom:32px}
+.pagehead h1{margin:0 0 8px;font-size:clamp(28px,3vw,40px);font-weight:900;letter-spacing:-.015em}
+.pagehead p{margin:0;font-size:15px;color:var(--stone-700);max-width:60ch;line-height:1.5}
+
+.browser{display:grid;grid-template-columns:260px 1fr;background:#fff;border:1px solid var(--stone-400)}
+.rail{border-right:1px solid var(--stone-400);padding:8px 0}
+.rail .search{padding:8px 16px 14px}
+.rail input[type=search]{width:100%;padding:9px 12px;border:1px solid var(--stone-400);border-radius:2px;font-size:14px}
+.rail button.folder{display:grid;grid-template-columns:20px 1fr;align-items:center;gap:10px;width:100%;text-align:left;background:transparent;border:0;border-left:3px solid transparent;padding:11px 16px;cursor:pointer;font-size:14.5px;color:var(--ink)}
+.rail button.folder:hover{background:var(--stone-100)}
+.rail button.folder.active{background:var(--stone-100);border-left-color:var(--accent);font-weight:700}
+.rail button.folder.active svg{stroke:var(--accent)}
+
+.panel{min-height:520px;display:flex;flex-direction:column}
+.crumbs{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 24px;border-bottom:1px solid var(--stone-400)}
+.crumbs button.crumb{background:transparent;border:0;padding:0;cursor:pointer;font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--stone-700)}
+.crumbs button.crumb:hover{color:var(--accent)}
+.crumbs button.crumb.current{color:var(--ink);cursor:default}
+.crumbs button.crumb.current:hover{color:var(--ink)}
+.crumbs .count{margin-left:auto;font-size:13px;color:var(--stone-700);white-space:nowrap}
+.panelactions{display:flex;gap:8px;align-items:center}
+.detailbar{display:flex;align-items:center;gap:16px;padding:16px 24px;border-bottom:1px solid var(--stone-400)}
+.detailbar #fmt-switch{margin-left:auto}
+.detailbar .toolbar{display:flex;gap:8px}
+
+.rows .row{display:grid;grid-template-columns:22px 1fr 150px 96px 20px;align-items:center;gap:16px;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--stone-100);padding:16px 24px;cursor:pointer;color:inherit}
+.rows .row:hover{background:var(--stone-100)}
+.rows .row .name{display:block;font-size:15.5px;font-weight:600}
+.rows .row .sub{display:block;margin-top:3px;font-size:12.5px;color:var(--stone-700)}
+.rows .row .cell{font-size:13px;color:var(--stone-700)}
+.rows .row .cell.num{font-variant-numeric:tabular-nums}
+.empty{margin:0;padding:36px 24px;font-size:14.5px;color:var(--stone-700)}
+
+button.primary{height:36px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;background:var(--accent);color:#fff;border:none;padding:0 16px;border-radius:2px;font-size:14px;cursor:pointer}
+button.primary:hover{background:var(--accent-mid)}
+button.secondary{height:36px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:6px;background:none;border:1px solid var(--stone-400);padding:0 16px;border-radius:2px;font-size:14px;cursor:pointer}
+button.secondary:hover{background:var(--stone-100)}
+button.ai-edit{height:36px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#fff;border:none;padding:0 16px;border-radius:2px;font-size:14px;cursor:pointer}
+button.ai-edit:hover{background:var(--accent-mid)}
+button.ai-edit:disabled{opacity:.6;cursor:default}
+.switch{height:36px;box-sizing:border-box;display:inline-flex;border:1px solid var(--stone-400);border-radius:999px;overflow:hidden}
+.switch button{height:100%;box-sizing:border-box;display:inline-flex;align-items:center;background:none;border:0;padding:0 16px;font-size:13px;color:var(--stone-700);cursor:pointer}
+.switch button.active{background:var(--ink);color:#fff}
+
+.menu-wrap{position:relative}
+button.iconbtn{background:none;border:1px solid var(--stone-400);border-radius:2px;box-sizing:border-box;width:36px;height:36px;font-size:16px;line-height:1;cursor:pointer;color:var(--stone-700)}
+button.iconbtn:hover{background:var(--stone-100);color:var(--ink)}
+.menu{position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--stone-400);min-width:180px;z-index:20;padding:4px}
+.menu button{display:block;width:100%;text-align:left;padding:9px 12px;background:none;border:0;cursor:pointer;font-size:14px;color:var(--ink)}
+.menu button:hover{background:var(--stone-100)}
+.menu button.danger{color:var(--accent)}
+
+.detail{padding:24px 28px}
+.detail .head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.detail h2{margin:0;font-size:24px;font-weight:900}
+.detail .toolbar{display:flex;gap:8px}
+.detail .meta{margin-top:6px;font-size:13px;color:var(--stone-700)}
+.markdown{font-size:15px;line-height:1.65;max-width:74ch;margin-top:18px}
+.markdown h1,.markdown h2,.markdown h3,.markdown h4{margin:22px 0 8px;font-weight:700;line-height:1.3}
+.markdown h1{font-size:24px}.markdown h2{font-size:20px}.markdown h3{font-size:17px}.markdown h4{font-size:15px}
+.markdown p{margin:0 0 14px}
+.markdown ul,.markdown ol{margin:0 0 14px;padding-left:24px}
+.markdown li{margin-bottom:4px}
+.markdown code{background:var(--stone-100);padding:2px 5px;border-radius:3px;font-size:13.5px;font-family:Consolas,monospace}
+.markdown pre{background:var(--ink);color:var(--brand-soft);padding:14px 16px;border-radius:3px;overflow-x:auto}
+.markdown pre code{background:none;padding:0;color:inherit}
+.markdown a{border-bottom:1px solid var(--accent-light)}
+.markdown table{border-collapse:collapse;margin:0 0 16px;font-size:14px;width:100%;max-width:74ch}
+.markdown th,.markdown td{border:1px solid var(--stone-400);padding:7px 12px;text-align:left;vertical-align:top}
+.markdown th{background:var(--stone-100);font-weight:700}
+.rawview{white-space:pre-wrap;font-family:Consolas,monospace;font-size:13.5px;line-height:1.6;background:var(--stone-100);padding:16px;border-radius:3px;max-width:100%;margin-top:18px}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--stone-100);color:var(--ink);border-radius:999px;padding:4px 12px;font-size:12.5px}
+.pill.small{padding:2px 10px;font-size:11.5px;color:var(--stone-700)}
+.pill button{border:0;background:none;cursor:pointer;color:var(--stone-700);font-size:15px;line-height:1;padding:0}
+.pillbox{border:1px solid var(--stone-400);border-radius:2px;padding:8px 10px}
+.pillbox input{border:0;padding:4px 2px;width:100%;outline:none}
+.auditbox{margin-top:32px;border:1px solid var(--stone-400);background:#fff}
+.auditbox summary{cursor:pointer;padding:14px 20px;font-weight:700;font-size:14px;list-style:none;display:flex;align-items:center;gap:8px}
+.auditbox summary::-webkit-details-marker{display:none}
+.auditbox summary::before{content:"▸";font-size:11px;color:var(--stone-700)}
+.auditbox[open] summary::before{content:"▾"}
+.audit-row{display:grid;grid-template-columns:1fr 160px 190px 150px 80px;align-items:center;gap:12px;padding:10px 20px;border-top:1px solid var(--stone-100);font-size:13px}
+.audit-row.head{font-weight:700;color:var(--stone-700);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.pill.channel-langdock{background:var(--accent-light);color:var(--accent)}
+.auditbox .scope{font-size:12.5px;color:var(--stone-700);padding:0 20px 12px;margin:0}
+button.linklike{background:none;border:0;padding:0;color:var(--accent);cursor:pointer;font-size:13px;text-decoration:underline;text-align:left}
+button.diffbtn{background:none;border:1px solid var(--stone-400);border-radius:2px;font-size:11px;padding:2px 8px;cursor:pointer;color:var(--stone-700);margin-left:6px}
+button.diffbtn:hover{background:var(--stone-100)}
+.diffblock{padding:12px 20px;background:var(--stone-100);border-top:1px solid var(--stone-100);font-family:Consolas,monospace;font-size:12.5px;line-height:1.6;white-space:pre-wrap}
+.diffblock .rem{background:var(--brand-accent-tint);color:var(--brand-accent-hover);display:block;text-decoration:line-through}
+.diffblock .add{background:var(--brand-ok-tint);color:var(--brand-ok);display:block}
+.diffblock .same{color:var(--stone-700);display:block}
+.diffblock .fieldchange{font-family:var(--font);margin-bottom:10px}
+.diffblock .fieldchange strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--stone-700);margin-bottom:2px}
+.diffblock hr.diffsep{border:0;border-top:1px solid var(--stone-400);margin:10px 0}
+input,textarea{width:100%;font-family:inherit;font-size:14px;padding:9px 10px;border:1px solid var(--stone-400);border-radius:2px}
+textarea{min-height:320px;resize:vertical;font-family:Consolas,monospace}
+label{display:block;font-size:12.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--stone-700);margin:16px 0 6px}
+.field-row{display:flex;gap:16px;flex-wrap:wrap}
+.field-row>div{flex:1;min-width:200px}
+.ai-row{display:flex;gap:8px;margin-bottom:8px}
+.ai-row input{flex:1}
+.attachments{margin-top:28px;border-top:1px solid var(--stone-100);padding-top:16px}
+.attachment{display:flex;align-items:center;gap:8px;font-size:14px;padding:4px 0}
+.attach-remove{margin-left:auto;background:none;border:0;cursor:pointer;color:var(--stone-700);font-size:16px;line-height:1;padding:2px 4px}
+.attach-remove:hover{color:var(--accent)}
+.dropzone{margin-top:10px;border:1px dashed var(--stone-400);border-radius:2px;padding:20px;text-align:center;font-size:13.5px;color:var(--stone-700);transition:border-color 150ms,background 150ms}
+.dropzone.dragover{border-color:var(--accent);background:var(--accent-light)}
+.dropzone .filepick{color:var(--accent);cursor:pointer;text-decoration:underline;margin-left:4px}
+.error{color:var(--accent);font-size:13px;margin-top:8px}
+
+@media (max-width:820px){
+  .browser{grid-template-columns:1fr}
+  .rail{border-right:0;border-bottom:1px solid var(--stone-400)}
+  .rows .row{grid-template-columns:22px 1fr 20px}
+  .rows .row .cell{display:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="/">
+      <img src="/assets/logo.svg" alt="">
+      <span>&larr; Back to intranet</span>
+    </a>
+    <span class="apptitle">Knowledge base</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="pagehead">
+    <h1>Knowledge base</h1>
+    <p>Guides, checklists and reference pages — filed in folders, with file attachments, full-text search and an audit trail. Readable and editable in the browser or from a Langdock chat through the intranet's MCP server.</p>
+  </div>
+
+  <div class="browser">
+    <aside class="rail" id="rail">
+      <div class="search"><input type="search" id="search-input" placeholder="Search…"></div>
+      <div id="folder-list"></div>
+    </aside>
+    <div class="panel" id="panel"></div>
+  </div>
+
+  <details class="auditbox" id="audit-details">
+    <summary>Audit log</summary>
+    <div id="audit-content"></div>
+  </details>
+</main>
+
+<script>
+const API = "/api/Wiki";
+const ATTACH_API = "/api/Attachments";
+const AI_EDIT_API = "/api/AiEdit";
+const DEFAULT_FOLDER = "General";
+
+const ICON = {
+  folder: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter" style="width:20px;height:20px"><path d="M3 7 H10 L12 9 H21 V19 H3 Z"></path></svg>',
+  doc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter" style="width:20px;height:20px"><path d="M6 3 H15 L19 7 V21 H6 Z"></path><path d="M15 3 V7 H19"></path></svg>',
+  chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" style="width:16px;height:16px"><path d="M9 5 L16 12 L9 19"></path></svg>',
+  chevSm: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" style="width:14px;height:14px"><path d="M9 5 L16 12 L9 19"></path></svg>',
+  ai: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter" style="width:15px;height:15px"><path d="M12 3 L13.8 9.2 L20 11 L13.8 12.8 L12 19 L10.2 12.8 L4 11 L10.2 9.2 Z"></path></svg>',
+  copy: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--brand-mute)" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter" style="width:15px;height:15px"><path d="M8 8 H18 V20 H8 Z"></path><path d="M6 16 H4 V4 H14 V6"></path></svg>',
+};
+
+let allPages = []; // full unfiltered set — small dataset, filtered/browsed entirely client-side
+let folders = []; // full flat list of known folder paths, e.g. "Guidelines/AI"
+let pages = []; // currently visible slice (either "this folder" or "search matches")
+let activePath = []; // [] = root; ["Guidelines"], ["Guidelines","AI"], ...
+const deepLinkId = new URLSearchParams(location.search).get("id");
+let selectedId = deepLinkId || null;
+let mode = deepLinkId ? "view" : "list"; // list | view | edit | new
+let viewFormat = "formatted"; // formatted | raw
+let searchQuery = "";
+// Bumped every time a render is (re)started; an in-flight render whose async work resolves
+// after a newer render has already started must not touch the DOM — otherwise a slow fetch
+// (page load, upload, save, ...) can win a race against a faster later one and snap the UI
+// back to stale content after the user has already moved on ("opens page A, flips to B").
+let renderGen = 0;
+let auditGen = 0;
+
+/* ---------- safe, dependency-free markdown ---------- */
+function escapeHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function isSafeUrl(url) { return /^(https?:|mailto:|#|\/)/i.test(url.trim()); }
+function inlineMd(text) {
+  text = text.replace(/`([^`]+)`/g, "<code>$1</code>");
+  text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  text = text.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, "<em>$1</em>");
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (m, label, url) =>
+    isSafeUrl(url) ? `<a href="${url}" target="_blank" rel="noopener">${label}</a>` : label
+  );
+  return text;
+}
+function isTableSep(l) { return /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(l); }
+function splitTableRow(l) { return l.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim()); }
+
+function renderMarkdown(raw) {
+  const lines = escapeHtml(raw).split("\n");
+  let html = "", inCode = false, listType = null;
+  const closeList = () => { if (listType) { html += listType === "ul" ? "</ul>" : "</ol>"; listType = null; } };
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (line.trim().startsWith("```")) {
+      if (!inCode) { closeList(); html += "<pre><code>"; inCode = true; } else { html += "</code></pre>"; inCode = false; }
+      i++; continue;
+    }
+    if (inCode) { html += line + "\n"; i++; continue; }
+
+    if (line.includes("|") && i + 1 < lines.length && isTableSep(lines[i + 1])) {
+      closeList();
+      const header = splitTableRow(line);
+      html += "<table><thead><tr>" + header.map((c) => `<th>${inlineMd(c)}</th>`).join("") + "</tr></thead><tbody>";
+      i += 2;
+      while (i < lines.length && lines[i].includes("|") && lines[i].trim() !== "") {
+        html += "<tr>" + splitTableRow(lines[i]).map((c) => `<td>${inlineMd(c)}</td>`).join("") + "</tr>";
+        i++;
+      }
+      html += "</tbody></table>";
+      continue;
+    }
+
+    const h = line.match(/^(#{1,4})\s+(.*)$/);
+    if (h) { closeList(); html += `<h${h[1].length}>${inlineMd(h[2])}</h${h[1].length}>`; i++; continue; }
+    const ul = line.match(/^[-*]\s+(.*)$/);
+    if (ul) { if (listType !== "ul") { closeList(); html += "<ul>"; listType = "ul"; } html += `<li>${inlineMd(ul[1])}</li>`; i++; continue; }
+    const ol = line.match(/^\d+\.\s+(.*)$/);
+    if (ol) { if (listType !== "ol") { closeList(); html += "<ol>"; listType = "ol"; } html += `<li>${inlineMd(ol[1])}</li>`; i++; continue; }
+    if (line.trim() === "") { closeList(); i++; continue; }
+    closeList();
+    html += `<p>${inlineMd(line)}</p>`;
+    i++;
+  }
+  closeList();
+  if (inCode) html += "</code></pre>";
+  return html;
+}
+
+/* ---------- tag pills ---------- */
+let formTags = [];
+function renderTagPillsEditable() {
+  const el = document.getElementById("tag-pills");
+  if (!el) return;
+  el.innerHTML = formTags.map((t, i) => `<span class="pill">${escapeHtml(t)}<button type="button" data-i="${i}" aria-label="Remove tag">&times;</button></span>`).join("");
+  el.querySelectorAll("button").forEach((btn) => {
+    btn.onclick = () => { formTags.splice(Number(btn.dataset.i), 1); renderTagPillsEditable(); };
+  });
+}
+function wireTagInput() {
+  const input = document.getElementById("tag-input");
+  input.onkeydown = (e) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      const v = input.value.trim().replace(/,$/, "");
+      if (v && !formTags.includes(v)) { formTags.push(v); renderTagPillsEditable(); }
+      input.value = "";
+    }
+  };
+}
+function staticPills(tags, small) {
+  if (!tags?.length) return "";
+  return `<div class="pills">${tags.map((t) => `<span class="pill${small ? " small" : ""}">${escapeHtml(t)}</span>`).join("")}</div>`;
+}
+
+/* ---------- data + folder-tree helpers ---------- */
+async function loadData() {
+  const data = await fetch(API).then((r) => r.json());
+  allPages = data.items ?? [];
+  folders = data.folders ?? [];
+}
+
+function pagesUnder(pathArr, recursive) {
+  const prefix = pathArr.join("/");
+  if (!prefix) {
+    // Root has no pages of its own — every page has a real folder (defaults to "General") —
+    // only subfolders live at the root, so "direct pages here" is always empty; "everything
+    // under here, recursively" is the whole set.
+    return recursive ? allPages : [];
+  }
+  return allPages.filter((p) => {
+    const f = p.folder || DEFAULT_FOLDER;
+    return recursive ? f === prefix || f.startsWith(prefix + "/") : f === prefix;
+  });
+}
+
+function directChildFolders(pathArr) {
+  const prefix = pathArr.join("/");
+  const depth = pathArr.length;
+  const set = new Set();
+  for (const f of folders) {
+    const segs = f.split("/");
+    if (depth === 0) { set.add(segs[0]); continue; }
+    if (f !== prefix && !f.startsWith(prefix + "/")) continue;
+    if (segs.length === depth + 1) set.add(segs[depth]);
+  }
+  return Array.from(set).sort();
+}
+
+function computeVisiblePages() {
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    pages = allPages.filter(
+      (p) => p.title.toLowerCase().includes(q) || p.content.toLowerCase().includes(q) || (p.tags ?? []).some((t) => t.toLowerCase().includes(q))
+    );
+  } else {
+    pages = pagesUnder(activePath, false);
+  }
+}
+
+async function refresh() {
+  await loadData();
+  computeVisiblePages();
+  renderRail();
+  renderPanel();
+}
+
+/* ---------- rail (top-level folders only, like the document library) ---------- */
+function renderRail() {
+  const el = document.getElementById("folder-list");
+  const roots = directChildFolders([]);
+  el.innerHTML = roots.map((name) => `
+    <button type="button" class="folder${activePath[0] === name ? " active" : ""}" data-root="${escapeHtml(name)}">
+      ${ICON.folder}<span>${escapeHtml(name)}</span>
+    </button>`).join("") || '<p class="empty" style="padding:16px 16px">No folders yet.</p>';
+  el.querySelectorAll("button.folder").forEach((btn) => {
+    btn.onclick = () => {
+      activePath = [btn.dataset.root];
+      selectedId = null; mode = "list"; searchQuery = "";
+      document.getElementById("search-input").value = "";
+      computeVisiblePages(); renderRail(); renderPanel();
+    };
+  });
+}
+
+/* ---------- folder actions: rename / delete / new subfolder ---------- */
+async function newSubfolderPrompt() {
+  const name = prompt("New subfolder name:");
+  if (!name || !name.trim()) return;
+  const path = [...activePath, name.trim()].join("/");
+  const res = await fetch(`${API}?createFolder=1`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path }),
+  });
+  if (!res.ok) { alert((await res.json()).error || "Could not create folder"); return; }
+  refresh();
+}
+
+async function renameFolderPrompt() {
+  const current = activePath.join("/");
+  const currentName = activePath[activePath.length - 1];
+  const input = prompt(`Rename folder "${currentName}" to:`, currentName);
+  if (!input) return;
+  const trimmed = input.trim();
+  if (!trimmed || trimmed === currentName) return;
+  const to = [...activePath.slice(0, -1), trimmed].join("/");
+  const res = await fetch(`${API}?renameFolder=1`, {
+    method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ from: current, to }),
+  });
+  if (!res.ok) { alert((await res.json()).error || "Rename failed"); return; }
+  activePath = [...activePath.slice(0, -1), trimmed];
+  refresh();
+}
+
+async function deleteFolderPrompt() {
+  const current = activePath.join("/");
+  const currentName = activePath[activePath.length - 1];
+  if (!confirm(`Delete folder "${currentName}"? This only works if it's empty — move or delete its contents first.`)) return;
+  const res = await fetch(`${API}?folder=${encodeURIComponent(current)}`, { method: "DELETE" });
+  if (!res.ok) { alert((await res.json()).error || "Delete failed"); return; }
+  activePath = activePath.slice(0, -1);
+  refresh();
+}
+
+/* ---------- panel ---------- */
+async function renderPanel() {
+  await renderPanelInner();
+  renderAuditPanel();
+}
+
+function crumbsHtml() {
+  const crumbs = [{ label: "All folders", depth: 0 }].concat(activePath.map((seg, i) => ({ label: seg, depth: i + 1 })));
+  return crumbs.map((c, i) => {
+    const isLast = i === crumbs.length - 1;
+    return `<button type="button" class="crumb${isLast ? " current" : ""}" data-depth="${c.depth}">${escapeHtml(c.label)}</button>` + (isLast ? "" : ICON.chevSm);
+  }).join("");
+}
+
+async function renderPanelInner() {
+  const myGen = ++renderGen;
+  const panel = document.getElementById("panel");
+  if (mode === "new") { panel.innerHTML = newPageForm(); wireNewPageForm(); return; }
+
+  if (mode === "list" || !selectedId) {
+    const children = searchQuery ? [] : directChildFolders(activePath);
+    const total = children.length + pages.length;
+    panel.innerHTML = `
+      <div class="crumbs">
+        ${searchQuery
+          ? `<span class="crumb current" style="font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink)">Search results for &ldquo;${escapeHtml(searchQuery)}&rdquo;</span>`
+          : crumbsHtml()}
+        <span class="count">${total} ${total === 1 ? "item" : "items"}</span>
+        <div class="panelactions">
+          ${!searchQuery && activePath.length ? `
+            <div class="menu-wrap" id="folder-menu-wrap">
+              <button type="button" class="iconbtn" id="folder-menu-btn" aria-label="Folder actions">&#8942;</button>
+              <div class="menu" id="folder-menu" hidden>
+                <button type="button" id="menu-rename-folder">Rename folder</button>
+                <button type="button" class="danger" id="menu-delete-folder">Delete folder</button>
+              </div>
+            </div>` : ""}
+          ${searchQuery ? "" : '<button type="button" class="secondary" id="new-subfolder-btn">+ New subfolder</button>'}
+          <button type="button" class="primary" id="new-page-btn">+ New page</button>
+        </div>
+      </div>
+      <div class="rows" id="rows"></div>`;
+
+    if (!searchQuery) {
+      document.querySelectorAll("#panel .crumbs button.crumb").forEach((btn) => {
+        btn.onclick = () => {
+          activePath = activePath.slice(0, Number(btn.dataset.depth));
+          selectedId = null; computeVisiblePages(); renderRail(); renderPanel();
+        };
+      });
+      if (activePath.length) {
+        const menuBtn = document.getElementById("folder-menu-btn");
+        const menu = document.getElementById("folder-menu");
+        menuBtn.onclick = (e) => { e.stopPropagation(); menu.hidden = !menu.hidden; };
+        document.getElementById("menu-rename-folder").onclick = () => { menu.hidden = true; renameFolderPrompt(); };
+        document.getElementById("menu-delete-folder").onclick = () => { menu.hidden = true; deleteFolderPrompt(); };
+      }
+      document.getElementById("new-subfolder-btn").onclick = newSubfolderPrompt;
+    }
+    document.getElementById("new-page-btn").onclick = () => { mode = "new"; renderPanel(); };
+
+    const rowsEl = document.getElementById("rows");
+    const folderRows = children.map((name) => {
+      const count = pagesUnder([...activePath, name], true).length;
+      return `<button type="button" class="row" data-enter="${escapeHtml(name)}">
+        ${ICON.folder}
+        <span><span class="name">${escapeHtml(name)}</span><span class="sub">${count} ${count === 1 ? "page" : "pages"}</span></span>
+        <span class="cell"></span><span class="cell num"></span>${ICON.chev}
+      </button>`;
+    });
+    const pageRows = pages.slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).map((p) => {
+      const sub = searchQuery
+        ? [p.folder || DEFAULT_FOLDER, ...(p.tags ?? [])].join(" · ")
+        : (p.tags ?? []).join(", ");
+      return `<button type="button" class="row" data-id="${p.id}">
+        ${ICON.doc}
+        <span><span class="name">${escapeHtml(p.title)}</span><span class="sub">${escapeHtml(sub)}</span></span>
+        <span class="cell">${escapeHtml(p.updatedBy || "")}</span>
+        <span class="cell num">${new Date(p.updatedAt).toLocaleDateString()}</span>${ICON.chev}
+      </button>`;
+    });
+    rowsEl.innerHTML = folderRows.join("") + pageRows.join("") || '<p class="empty">Nothing here yet.</p>';
+    rowsEl.querySelectorAll("button.row[data-enter]").forEach((btn) => {
+      btn.onclick = () => { activePath = [...activePath, btn.dataset.enter]; selectedId = null; computeVisiblePages(); renderRail(); renderPanel(); };
+    });
+    rowsEl.querySelectorAll("button.row[data-id]").forEach((btn) => {
+      btn.onclick = () => { selectedId = btn.dataset.id; mode = "view"; viewFormat = "formatted"; renderPanel(); };
+    });
+    return;
+  }
+
+  const res = await fetch(`${API}?id=${encodeURIComponent(selectedId)}`);
+  if (myGen !== renderGen) return; // a newer render started while this fetch was in flight
+  if (!res.ok) { panel.innerHTML = '<p class="empty">Page not found.</p>'; return; }
+  const page = await res.json();
+  if (myGen !== renderGen) return;
+
+  if (mode === "edit") { panel.innerHTML = editPageForm(page); wireEditPageForm(page); return; }
+
+  panel.innerHTML = `
+    <div class="detailbar">
+      <button type="button" class="secondary" id="back-btn">&larr; Back</button>
+      <div class="switch" id="fmt-switch">
+        <button type="button" class="active" id="fmt-formatted">Formatted</button>
+        <button type="button" id="fmt-raw">Markdown</button>
+      </div>
+      <div class="toolbar">
+        <button class="secondary" id="copy-btn">${ICON.copy}<span>Copy</span></button>
+        <button class="secondary" id="edit-btn">Edit</button>
+        <button class="secondary" id="delete-btn">Delete</button>
+      </div>
+    </div>
+    <div class="detail">
+      <div class="head">
+        <div>
+          <h2>${escapeHtml(page.title)}</h2>
+          <div class="meta">${escapeHtml(page.folder || DEFAULT_FOLDER)} · updated ${new Date(page.updatedAt).toLocaleString()} by ${escapeHtml(page.updatedBy || "")}</div>
+          ${staticPills(page.tags)}
+        </div>
+      </div>
+      <div id="content-area"></div>
+      <div class="attachments">
+        <strong>Attachments</strong>
+        <div id="attachment-list"></div>
+        <div class="dropzone" id="dropzone">
+          <span>Drag a file here, or</span>
+          <label class="filepick">choose a file<input type="file" id="file-input" hidden></label>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById("back-btn").onclick = () => { mode = "list"; renderPanel(); };
+  document.getElementById("copy-btn").onclick = () => copyToClipboard(page.content, document.getElementById("copy-btn"));
+  document.getElementById("edit-btn").onclick = () => { mode = "edit"; renderPanel(); };
+  document.getElementById("delete-btn").onclick = () => deletePage(page.id, page.title);
+  document.getElementById("fmt-formatted").onclick = () => setViewFormat("formatted", page.content);
+  document.getElementById("fmt-raw").onclick = () => setViewFormat("raw", page.content);
+  setViewFormat(viewFormat, page.content);
+  renderAttachments(page);
+  wireDropzone(page.id);
+}
+
+async function copyToClipboard(text, btn) {
+  const label = btn.querySelector("span");
+  try {
+    await navigator.clipboard.writeText(text);
+    label.textContent = "Copied!";
+  } catch {
+    label.textContent = "Copy failed";
+  }
+  setTimeout(() => { label.textContent = "Copy"; }, 1500);
+}
+
+function setViewFormat(format, content) {
+  viewFormat = format;
+  document.getElementById("fmt-formatted").classList.toggle("active", format === "formatted");
+  document.getElementById("fmt-raw").classList.toggle("active", format === "raw");
+  document.getElementById("content-area").innerHTML =
+    format === "formatted" ? `<div class="markdown">${renderMarkdown(content)}</div>` : `<div class="rawview">${escapeHtml(content)}</div>`;
+}
+
+async function deletePage(id, title) {
+  if (!confirm(`Delete "${title}"? This cannot be undone (the content stays in the audit log).`)) return;
+  const res = await fetch(`${API}?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+  if (!res.ok) { alert((await res.json()).error || "Delete failed"); return; }
+  selectedId = null; mode = "list";
+  refresh();
+}
+
+function renderAttachments(page) {
+  const el = document.getElementById("attachment-list");
+  const items = page.attachments ?? [];
+  if (items.length === 0) { el.innerHTML = '<p class="empty" style="padding:8px 0">No attachments.</p>'; return; }
+  el.innerHTML = "";
+  for (const a of items) {
+    const row = document.createElement("div");
+    row.className = "attachment";
+    const link = document.createElement("a");
+    link.textContent = a.filename;
+    link.href = "#";
+    link.onclick = async (e) => {
+      e.preventDefault();
+      const r = await fetch(`${ATTACH_API}?kind=wiki&pageId=${page.id}&attachmentId=${a.id}`);
+      const { url } = await r.json();
+      window.open(url, "_blank");
+    };
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "attach-remove";
+    del.innerHTML = "&times;";
+    del.title = "Delete attachment";
+    del.onclick = async () => {
+      if (!confirm(`Delete "${a.filename}"?`)) return;
+      const r = await fetch(`${ATTACH_API}?kind=wiki&pageId=${page.id}&attachmentId=${a.id}`, { method: "DELETE" });
+      if (!r.ok) { alert((await r.json()).error || "Delete failed"); return; }
+      renderPanel();
+    };
+    row.appendChild(link);
+    row.appendChild(del);
+    el.appendChild(row);
+  }
+}
+
+async function uploadAttachment(pageId, file) {
+  if (!file) return;
+  const contentBase64 = await fileToBase64(file);
+  const res = await fetch(ATTACH_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ kind: "wiki", pageId, filename: file.name, contentType: file.type || "application/octet-stream", contentBase64 }),
+  });
+  if (!res.ok) { alert((await res.json()).error || "Upload failed"); return; }
+  renderPanel();
+}
+
+function wireDropzone(pageId) {
+  const zone = document.getElementById("dropzone");
+  const input = document.getElementById("file-input");
+  input.onchange = (e) => uploadAttachment(pageId, e.target.files[0]);
+  ["dragenter", "dragover"].forEach((evt) => zone.addEventListener(evt, (e) => { e.preventDefault(); zone.classList.add("dragover"); }));
+  ["dragleave", "drop"].forEach((evt) => zone.addEventListener(evt, (e) => { e.preventDefault(); zone.classList.remove("dragover"); }));
+  zone.addEventListener("drop", (e) => {
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (file) uploadAttachment(pageId, file);
+  });
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function newPageForm() {
+  return `
+    <div class="detail">
+      <h2>New page</h2>
+      <div class="field-row">
+        <div><label>Title</label><input id="f-title"></div>
+        <div><label>Folder</label><input id="f-folder" list="folder-options" value="${escapeHtml(activePath.join("/") || DEFAULT_FOLDER)}">
+          <datalist id="folder-options">${folders.map((f) => `<option value="${escapeHtml(f)}">`).join("")}</datalist>
+        </div>
+      </div>
+      <label>Tags</label>
+      <div class="pillbox"><div class="pills" id="tag-pills"></div><input type="text" id="tag-input" placeholder="Type a tag and press Enter"></div>
+      <label>Content (Markdown)</label><textarea id="f-content"></textarea>
+      <div class="detail toolbar" style="margin-top:16px;padding:0">
+        <button class="primary" id="f-save">Save</button>
+        <button class="secondary" id="f-cancel">Cancel</button>
+      </div>
+      <div class="error" id="f-error"></div>
+    </div>`;
+}
+
+function wireNewPageForm() {
+  formTags = [];
+  renderTagPillsEditable();
+  wireTagInput();
+  document.getElementById("f-cancel").onclick = () => { mode = "list"; renderPanel(); };
+  document.getElementById("f-save").onclick = async () => {
+    const title = document.getElementById("f-title").value.trim();
+    const content = document.getElementById("f-content").value;
+    const folder = document.getElementById("f-folder").value.trim();
+    if (!title || !content) { document.getElementById("f-error").textContent = "Title and content are required."; return; }
+    const res = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, content, tags: formTags, folder }) });
+    if (!res.ok) { document.getElementById("f-error").textContent = (await res.json()).error || "Save failed."; return; }
+    const page = await res.json();
+    selectedId = page.id; mode = "view";
+    refresh();
+  };
+}
+
+function editPageForm(page) {
+  return `
+    <div class="detail">
+      <h2>Edit page</h2>
+      <div class="field-row">
+        <div><label>Title</label><input id="f-title" value="${escapeHtml(page.title)}"></div>
+        <div><label>Folder</label><input id="f-folder" list="folder-options" value="${escapeHtml(page.folder || DEFAULT_FOLDER)}">
+          <datalist id="folder-options">${folders.map((f) => `<option value="${escapeHtml(f)}">`).join("")}</datalist>
+        </div>
+      </div>
+      <label>Tags</label>
+      <div class="pillbox"><div class="pills" id="tag-pills"></div><input type="text" id="tag-input" placeholder="Type a tag and press Enter"></div>
+      <label>Content (Markdown)</label>
+      <div class="ai-row">
+        <input type="text" id="f-ai-prompt" placeholder="Describe the change, e.g. &quot;add a step for returns&quot;">
+        <button type="button" class="ai-edit" id="f-ai-edit">${ICON.ai}<span>AI edit</span></button>
+      </div>
+      <textarea id="f-content">${escapeHtml(page.content)}</textarea>
+      <div class="detail toolbar" style="margin-top:16px;padding:0">
+        <button class="primary" id="f-save">Save</button>
+        <button class="secondary" id="f-cancel">Cancel</button>
+      </div>
+      <div class="error" id="f-error"></div>
+    </div>`;
+}
+
+function wireEditPageForm(page) {
+  formTags = [...(page.tags || [])];
+  renderTagPillsEditable();
+  wireTagInput();
+  document.getElementById("f-cancel").onclick = () => { mode = "view"; renderPanel(); };
+  document.getElementById("f-ai-edit").onclick = async () => {
+    const promptEl = document.getElementById("f-ai-prompt");
+    const instruction = promptEl.value.trim();
+    if (!instruction) { document.getElementById("f-error").textContent = "Describe what you want changed."; return; }
+    const btn = document.getElementById("f-ai-edit");
+    const label = btn.querySelector("span");
+    const content = document.getElementById("f-content").value;
+    btn.disabled = true; label.textContent = "Thinking…";
+    document.getElementById("f-error").textContent = "";
+    try {
+      const res = await fetch(AI_EDIT_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind: "wiki", content, instruction }) });
+      if (!res.ok) throw new Error((await res.json()).error || "AI edit failed.");
+      const revised = await res.json();
+      document.getElementById("f-content").value = revised.content;
+      promptEl.value = "";
+    } catch (err) {
+      document.getElementById("f-error").textContent = err.message;
+    } finally {
+      btn.disabled = false; label.textContent = "AI edit";
+    }
+  };
+  document.getElementById("f-save").onclick = async () => {
+    const title = document.getElementById("f-title").value.trim();
+    const content = document.getElementById("f-content").value;
+    const folder = document.getElementById("f-folder").value.trim();
+    if (!title || !content) { document.getElementById("f-error").textContent = "Title and content are required."; return; }
+    const res = await fetch(API, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: page.id, title, content, folder, tags: formTags }) });
+    if (!res.ok) { document.getElementById("f-error").textContent = (await res.json()).error || "Save failed."; return; }
+    mode = "view";
+    refresh();
+  };
+}
+
+document.addEventListener("click", (e) => {
+  const menu = document.getElementById("folder-menu");
+  if (menu && !menu.hidden && !e.target.closest("#folder-menu-wrap")) menu.hidden = true;
+});
+
+let searchDebounce;
+document.getElementById("search-input").oninput = (e) => {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => { searchQuery = e.target.value.trim(); selectedId = null; mode = "list"; computeVisiblePages(); renderPanel(); }, 300);
+};
+
+/* ---------- audit log ---------- */
+function diffLines(before, after) {
+  const a = (before ?? "").split("\n");
+  const b = (after ?? "").split("\n");
+  const m = a.length, n = b.length;
+  if (m * n > 300000) return [{ type: "same", text: "(too large to diff inline)" }];
+  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = m - 1; i >= 0; i--) {
+    for (let j = n - 1; j >= 0; j--) {
+      dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    }
+  }
+  const result = [];
+  let i = 0, j = 0;
+  while (i < m && j < n) {
+    if (a[i] === b[j]) { result.push({ type: "same", text: a[i] }); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { result.push({ type: "removed", text: a[i] }); i++; }
+    else { result.push({ type: "added", text: b[j] }); j++; }
+  }
+  while (i < m) { result.push({ type: "removed", text: a[i] }); i++; }
+  while (j < n) { result.push({ type: "added", text: b[j] }); j++; }
+  return result;
+}
+
+function renderChangeDetails(entry) {
+  const parts = [];
+  if (entry.titleBefore !== undefined) {
+    parts.push(`<div class="fieldchange"><strong>Title</strong>${escapeHtml(entry.titleBefore)} → ${escapeHtml(entry.titleAfter)}</div>`);
+  }
+  if (entry.tagsBefore !== undefined) {
+    const before = entry.tagsBefore.length ? entry.tagsBefore.join(", ") : "—";
+    const after = entry.tagsAfter.length ? entry.tagsAfter.join(", ") : "—";
+    parts.push(`<div class="fieldchange"><strong>Tags</strong>${escapeHtml(before)} → ${escapeHtml(after)}</div>`);
+  }
+  if (entry.before !== entry.after) {
+    if (parts.length) parts.push('<hr class="diffsep">');
+    parts.push(renderDiffHtml(entry.before, entry.after));
+  }
+  return parts.join("");
+}
+
+function renderDiffHtml(before, after) {
+  const lines = diffLines(before, after);
+  const out = [];
+  let i = 0;
+  while (i < lines.length) {
+    if (lines[i].type !== "same") { out.push(lines[i]); i++; continue; }
+    let j = i;
+    while (j < lines.length && lines[j].type === "same") j++;
+    const runLen = j - i;
+    if (runLen <= 4) { for (let k = i; k < j; k++) out.push(lines[k]); }
+    else {
+      out.push(lines[i], lines[i + 1], { type: "same", text: `… ${runLen - 4} unchanged lines …` }, lines[j - 2], lines[j - 1]);
+    }
+    i = j;
+  }
+  return out.map((l) => {
+    const cls = l.type === "removed" ? "rem" : l.type === "added" ? "add" : "same";
+    const prefix = l.type === "removed" ? "− " : l.type === "added" ? "+ " : "  ";
+    return `<span class="${cls}">${prefix}${escapeHtml(l.text)}</span>`;
+  }).join("\n");
+}
+
+let currentAuditEntries = [];
+
+async function renderAuditPanel() {
+  const myGen = ++auditGen;
+  const details = document.getElementById("audit-details");
+  if (!details.open) return;
+  const el = document.getElementById("audit-content");
+  el.innerHTML = '<p class="empty">Loading…</p>';
+
+  const viewingPage = !!selectedId && mode !== "list" && mode !== "new";
+  let url, scopeLabel;
+  if (viewingPage) {
+    url = `/api/Audit?kind=wiki&pageId=${encodeURIComponent(selectedId)}&limit=100`;
+    scopeLabel = "this page";
+  } else {
+    url = "/api/Audit?kind=wiki&limit=300";
+    scopeLabel = activePath.length ? `folder "${activePath.join("/")}"` : "all pages";
+  }
+
+  const res = await fetch(url);
+  if (myGen !== auditGen) return;
+  const data = await res.json();
+  if (myGen !== auditGen) return;
+  let entries = data.entries ?? [];
+  if (!viewingPage && activePath.length) {
+    const current = activePath.join("/");
+    const idsHere = new Set(pagesUnder(activePath, true).map((p) => p.id));
+    // Folder-level entries (rename/delete/create-folder) have no pageId, so they need their
+    // own relatedness check: show them if they're about this folder, a subfolder, or an
+    // ancestor folder (renaming/deleting an ancestor affects everything under it).
+    const related = (p) => p === current || p.startsWith(current + "/") || current.startsWith(p + "/");
+    entries = entries.filter((e) => {
+      if (e.pageId) return idsHere.has(e.pageId);
+      if (e.action === "rename-folder") return related(e.from) || related(e.to);
+      if (e.action === "delete-folder" || e.action === "create-folder") return related(e.folder);
+      return false;
+    });
+  }
+  currentAuditEntries = entries;
+
+  if (!res.ok || entries.length === 0) {
+    el.innerHTML = `<p class="scope">Showing: ${escapeHtml(scopeLabel)}</p><p class="empty">No audit entries here yet.</p>`;
+    return;
+  }
+
+  const rows = entries.map((e, i) => {
+    const via = e.channel === "langdock" ? "Langdock" : "Browser";
+    let pageCell;
+    if (e.action === "rename-folder") {
+      pageCell = `${escapeHtml(e.from)} → ${escapeHtml(e.to)} <span class="pill small">${e.count} page${e.count === 1 ? "" : "s"}</span>`;
+    } else if (e.action === "delete-folder") {
+      pageCell = `${escapeHtml(e.folder)} <span class="pill small">folder deleted</span>`;
+    } else if (e.action === "create-folder") {
+      pageCell = `${escapeHtml(e.folder)} <span class="pill small">folder created</span>`;
+    } else {
+      const target = e.title || e.snapshot?.title || e.pageId || "";
+      pageCell =
+        e.action !== "delete"
+          ? `<button type="button" class="linklike" data-goto="${e.pageId}">${escapeHtml(target)}</button>`
+          : `${escapeHtml(target)} <span class="pill small">deleted</span>`;
+    }
+    const hasDiff = e.before !== undefined && (e.before !== e.after || e.titleBefore !== undefined || e.tagsBefore !== undefined);
+    const diffBtn = hasDiff ? `<button type="button" class="diffbtn" data-idx="${i}">changes</button>` : "";
+    return (
+      `<div class="audit-row"><span>${pageCell}</span><span>${new Date(e.ts).toLocaleString()}</span><span>${escapeHtml(e.user)}</span>` +
+      `<span>${escapeHtml(e.action)}${diffBtn}</span><span><span class="pill${e.channel === "langdock" ? " channel-langdock" : ""}">${via}</span></span></div>` +
+      `<div class="diffblock" style="display:none"></div>`
+    );
+  }).join("");
+
+  el.innerHTML =
+    `<p class="scope">Showing: ${escapeHtml(scopeLabel)} · ${entries.length} ${entries.length === 1 ? "entry" : "entries"}</p>` +
+    '<div class="audit-row head"><span>Page</span><span>Time</span><span>User</span><span>Action</span><span>Via</span></div>' +
+    rows;
+
+  el.querySelectorAll("button.linklike").forEach((btn) => {
+    btn.onclick = () => { selectedId = btn.dataset.goto; mode = "view"; viewFormat = "formatted"; renderPanel(); };
+  });
+  el.querySelectorAll("button.diffbtn").forEach((btn) => {
+    btn.onclick = () => {
+      const diffDiv = btn.closest(".audit-row").nextElementSibling;
+      const willShow = diffDiv.style.display === "none";
+      if (willShow && !diffDiv.dataset.rendered) {
+        const entry = currentAuditEntries[Number(btn.dataset.idx)];
+        diffDiv.innerHTML = renderChangeDetails(entry);
+        diffDiv.dataset.rendered = "1";
+      }
+      diffDiv.style.display = willShow ? "block" : "none";
+    };
+  });
+}
+
+document.getElementById("audit-details").addEventListener("toggle", (e) => {
+  if (e.target.open) renderAuditPanel();
+});
+
+refresh();
+</script>
+</body>
+</html>

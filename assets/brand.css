@@ -1,0 +1,48 @@
+/* ============================================================================
+   BRAND TOKENS — the one file to edit to make this intranet look like yours.
+   Nothing else in the repo names a colour or a font family. Change a value here
+   and every page, every app and every Langdock-built user app follows.
+   Companion: BRANDING.md (logo, favicon, name) and DESIGN.md (why it looks
+   like this).
+   ============================================================================ */
+
+:root{
+  /* --- 1. ACCENT: exactly one. Used for the logo colour, H1, buttons, links,
+         focus rings and key figures. A second accent is the fastest way to make
+         an intranet look like three different products. --------------------- */
+  --brand-accent:#D3181F;        /* your primary brand colour */
+  --brand-accent-hover:#C62332;  /* pressed/hover state: same hue, a shade darker */
+  --brand-accent-mid:#EE6A6F;    /* a lighter tint, for charts where one tone is not enough */
+  --brand-accent-tint:#F0DEDC;   /* a very soft wash of the accent, for small filled badges */
+
+  /* --- 2. NEUTRALS: text, lines and surfaces. Warm greys here; a cooler grey
+         palette works just as well as long as all four move together. ------- */
+  --brand-ink:#0F0F0F;           /* body text and headings that are not the accent */
+  --brand-mute:#8C7E75;          /* secondary text, captions, labels */
+  --brand-line:#C4BAB2;          /* hairlines, table and card borders — never text */
+  --brand-soft:#F2EEEA;          /* page background, table headers, section fills */
+  --brand-paper:#FFFFFF;         /* cards and raised surfaces */
+
+  /* --- 2b. FUNCTIONAL, not brand: the "added / saved / done" pair. Kept separate because
+         it carries meaning rather than identity — a diff and a success message need to read
+         as such. Leave them unless your palette genuinely clashes. ---------- */
+  --brand-ok:#155724;
+  --brand-ok-tint:#DCF0DC;
+
+  /* --- 3. TYPE. The stack falls through to system fonts, so the site is
+         readable before you add anything. To use a corporate webfont, drop the
+         files into assets/fonts/, declare them with @font-face below (self-host
+         them: the app CSP blocks Google Fonts and every other CDN), and put the
+         family first in --font-sans. ---------------------------------------- */
+  --font-sans:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --font-condensed:"Segoe UI Semibold","Segoe UI",system-ui,sans-serif; /* dense tables, axes */
+  --font-accent:Georgia,"Times New Roman",serif;                        /* big figures, pull quotes */
+}
+
+/* Example of a self-hosted corporate font — uncomment, adjust the file names, and
+   put the family name first in --font-sans above.
+
+@font-face{font-family:"Your Sans";src:url("/assets/fonts/YourSans-Regular.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Your Sans";src:url("/assets/fonts/YourSans-Medium.woff2") format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"Your Sans";src:url("/assets/fonts/YourSans-Bold.woff2") format("woff2");font-weight:700;font-display:swap}
+*/

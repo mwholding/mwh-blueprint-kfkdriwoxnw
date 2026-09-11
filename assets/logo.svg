@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 28" width="210" height="28" role="img" aria-label="Your brand">
+  <!-- PLACEHOLDER LOGO — replace this file with your own (SVG preferred, PNG at 2x also fine).
+       Keep the height around 28px and the width flexible; the header sizes it by height. -->
+  <rect x="0" y="2" width="24" height="24" fill="#D3181F"/>
+  <rect x="6" y="8" width="12" height="3" fill="#FFFFFF"/>
+  <rect x="6" y="14" width="12" height="3" fill="#FFFFFF"/>
+  <rect x="6" y="20" width="7" height="3" fill="#FFFFFF"/>
+  <text x="34" y="21" font-family="Segoe UI, system-ui, sans-serif" font-size="18" font-weight="700" fill="#0F0F0F">Your brand</text>
+</svg>

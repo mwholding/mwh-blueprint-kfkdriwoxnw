@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Intranet</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<!-- app-kit.css imports assets/brand.css, which is the only file to edit when rebranding. -->
+<link rel="stylesheet" href="/assets/app-kit.css">
+<style>
+/* Home page only. Everything here reads the brand tokens — no literal colours. */
+header.top{background:var(--brand-paper);border-bottom:1px solid var(--brand-line)}
+header.top .wrap{height:64px;display:flex;align-items:center;gap:14px}
+header.top .brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+header.top .brand img{height:26px;width:auto;display:block}
+header.top .brand .label{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--brand-mute);
+  border-left:1px solid var(--brand-line);padding-left:12px}
+header.top .who{margin-left:auto;display:flex;align-items:center;gap:14px;font-size:12.5px;color:var(--brand-mute)}
+header.top .who a{font-size:12.5px}
+
+.hero{padding:clamp(32px,5vw,64px) 0 8px}
+.hero h1{margin:0 0 10px}
+.hero p.lead{max-width:60ch;font-size:17px;color:var(--brand-ink);margin:0}
+
+.finder{display:flex;gap:10px;margin:26px 0 0;max-width:640px}
+.finder input{max-width:none}
+.finder button{min-height:0;padding:10px 18px}
+.results{margin:14px 0 0;max-width:760px}
+.results .hit{background:var(--brand-paper);border:1px solid var(--brand-line);padding:12px 14px;margin-bottom:8px}
+.results .hit a{font-weight:700}
+.results .hit p{margin:4px 0 0;font-size:13px;color:var(--brand-mute)}
+.results .none{font-size:13.5px;color:var(--brand-mute)}
+
+.section{margin-top:clamp(36px,5vw,60px)}
+.section h2{margin:0 0 4px}
+.section p.sub{margin:0 0 18px;color:var(--brand-mute);font-size:14px}
+
+.tiles{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.tile{display:flex;flex-direction:column;gap:8px;background:var(--brand-paper);border:1px solid var(--brand-line);
+  padding:22px 24px;color:var(--brand-ink);text-decoration:none}
+.tile:hover{border-color:var(--brand-mute);color:var(--brand-ink)}
+.tile h3{margin:0;font-size:17px}
+.tile p{margin:0;font-size:13.5px;line-height:1.55;color:var(--brand-mute)}
+.tile .meta{margin-top:auto;padding-top:12px;display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--brand-mute)}
+.tile.soon{opacity:.6;cursor:default}
+.tile.soon:hover{border-color:var(--brand-line)}
+
+.build{display:grid;gap:22px;grid-template-columns:1.2fr 1fr;background:var(--brand-paper);
+  border:1px solid var(--brand-line);border-left:3px solid var(--brand-accent);padding:26px 28px}
+.build h2{margin-top:0}
+.build ol{margin:0;padding-left:20px;font-size:14px;color:var(--brand-mute)}
+.build ol li{margin-bottom:8px}
+.build ol li strong{color:var(--brand-ink)}
+.build pre{margin:0;white-space:pre-wrap;font-size:12.5px;color:var(--brand-mute)}
+@media (max-width:820px){.build{grid-template-columns:1fr}}
+
+footer.foot{margin-top:clamp(48px,6vw,80px);border-top:1px solid var(--brand-line);background:var(--brand-paper)}
+footer.foot .wrap{padding:22px var(--brand-gutter);display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--brand-mute)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand plain" href="/">
+      <img id="logo" src="/assets/logo.svg" alt="">
+      <span class="label" id="short-name">Intranet</span>
+    </a>
+    <span class="who">
+      <span id="signed-in"></span>
+      <a href="/.auth/logout">Sign out</a>
+    </span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="hero">
+    <h1 id="site-name">Intranet</h1>
+    <p class="lead" id="tagline"></p>
+
+    <!-- Search hits /api/Search, which filters by the caller's permissions in
+         api/_shared/search.js — the same function the MCP `search` tool uses, so the browser
+         and a Langdock chat can never see different results. -->
+    <form class="finder" id="finder">
+      <input type="search" id="q" placeholder="Search the knowledge base…" aria-label="Search">
+      <button type="submit">Search</button>
+    </form>
+    <div class="results" id="results"></div>
+  </div>
+
+  <section class="section">
+    <h2>Apps</h2>
+    <p class="sub">Only what you may open is listed. Access is managed in
+      <a href="/apps/access-admin/">access management</a>, not in this page's code.</p>
+    <div class="tiles" id="tiles"></div>
+  </section>
+
+  <section class="section">
+    <div class="build">
+      <div>
+        <h2>Build your own app</h2>
+        <ol>
+          <li><strong>Open a Langdock chat</strong> and tag the <code>@Intranet</code> integration.</li>
+          <li><strong>Describe the tool</strong> you need in plain words. Langdock writes it and
+            saves it here through this intranet's MCP server.</li>
+          <li><strong>It is live immediately</strong> at its own URL, private to you until you
+            share it, and listed under <a href="/apps/my-apps/">My apps</a>.</li>
+        </ol>
+      </div>
+      <div>
+        <div class="card" style="margin:0;padding:14px 16px">
+          <pre>Build me a small app that logs supplier
+complaints: a form, a table of what was
+logged, and a monthly summary written
+with AI. Share it with my team.</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <span id="foot-name"></span>
+    <span>Signed in with Microsoft Entra ID.</span>
+    <span id="foot-contact"></span>
+  </div>
+</footer>
+
+<script>
+// ---------------------------------------------------------------------------
+// Everything on this page is driven by two files: site.json (names, contact)
+// and apps/apps.json (the tiles). Nothing about access lives here — a tile is
+// shown when the visitor holds the role named by its own path.
+// ---------------------------------------------------------------------------
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// /apps/<id>/ -> "<id>", which is both the folder name and the role name.
+const appIdOf = (url) => (String(url).match(/^\/apps\/([^/]+)\//) || [])[1] || "";
+
+async function json(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(url + " -> " + r.status);
+  return r.json();
+}
+
+async function main() {
+  const [site, apps, me] = await Promise.all([
+    json("/site.json").catch(() => ({})),
+    json("/apps/apps.json").catch(() => []),
+    json("/.auth/me").catch(() => ({})),
+  ]);
+
+  const name = site.name || "Intranet";
+  document.title = name + " — Intranet";
+  document.getElementById("site-name").textContent = name;
+  document.getElementById("short-name").textContent = site.shortName || "Intranet";
+  document.getElementById("tagline").textContent = site.tagline || "";
+  document.getElementById("foot-name").textContent = name;
+  document.getElementById("foot-contact").innerHTML = site.supportContact
+    ? 'Something missing? <a href="mailto:' + esc(site.supportContact) + '">' + esc(site.supportContact) + "</a>"
+    : "";
+
+  const principal = me.clientPrincipal || {};
+  const roles = principal.userRoles || [];
+  document.getElementById("signed-in").textContent = principal.userDetails || "";
+
+  // Open vs restricted per app, from the access registry (api/Apps). Optional: if the call
+  // fails the tiles simply carry no label, rather than the page failing.
+  let modes = {};
+  try { modes = (await json("/api/Apps")).apps || {}; } catch (e) { modes = {}; }
+
+  const tiles = apps.map((app) => {
+    const external = /^https?:/i.test(app.url);
+    const id = appIdOf(app.url);
+    const planned = app.status === "planned";
+    if (!external && !planned && id && !roles.includes(id)) return "";   // not yours to see
+
+    const mode = modes[id];
+    const label = planned ? "Coming soon"
+      : external ? "External"
+      : mode ? (mode.gated ? "Restricted" : "All staff")
+      : "";
+    const tag = planned ? "div" : "a";
+    const href = planned ? "" : ' href="' + esc(app.url) + '"' + (external ? ' target="_blank" rel="noopener"' : "");
+    return "<" + tag + ' class="tile' + (planned ? " soon" : "") + '"' + href + ">"
+      + "<h3>" + esc(app.name) + "</h3>"
+      + "<p>" + esc(app.desc) + "</p>"
+      + '<span class="meta">' + (label ? '<span class="chip">' + esc(label) + "</span>" : "") + "</span>"
+      + "</" + tag + ">";
+  });
+
+  document.getElementById("tiles").innerHTML =
+    tiles.filter(Boolean).join("") || '<p class="sub">No apps are shared with your account yet.</p>';
+}
+
+document.getElementById("finder").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const q = document.getElementById("q").value.trim();
+  const out = document.getElementById("results");
+  if (!q) { out.innerHTML = ""; return; }
+  out.innerHTML = '<p class="none">Searching…</p>';
+  try {
+    const data = await json("/api/Search?q=" + encodeURIComponent(q));
+    const hits = data.wiki || [];
+    out.innerHTML = hits.length
+      ? hits.map((h) =>
+          '<div class="hit"><a href="/apps/wiki/?id=' + encodeURIComponent(h.id) + '">' + esc(h.title) + "</a>"
+          + (h.folder ? ' <span class="chip">' + esc(h.folder) + "</span>" : "")
+          + "<p>" + esc(h.snippet) + "</p></div>").join("")
+      : '<p class="none">Nothing found for “' + esc(q) + '”. Only content you may read is searched.</p>';
+  } catch (err) {
+    out.innerHTML = '<p class="none">Search is unavailable right now.</p>';
+  }
+});
+
+main();
+</script>
+</body>
+</html>

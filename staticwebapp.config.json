@@ -1,0 +1,92 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/assets/*"
+    ]
+  },
+  "mimeTypes": {
+    ".md": "text/markdown; charset=utf-8",
+    ".json": "application/json",
+    ".woff2": "font/woff2",
+    ".svg": "image/svg+xml",
+    ".png": "image/png",
+    ".jpeg": "image/jpeg"
+  },
+  "globalHeaders": {
+    "X-Robots-Tag": "noindex, nofollow",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "same-origin"
+  },
+  "auth": {
+    "rolesSource": "/api/GetRoles",
+    "identityProviders": {
+      "azureActiveDirectory": {
+        "registration": {
+          "openIdIssuer": "https://login.microsoftonline.com/common/v2.0",
+          "clientIdSettingName": "AAD_CLIENT_ID",
+          "clientSecretSettingName": "AAD_CLIENT_SECRET"
+        }
+      }
+    }
+  },
+  "platform": {
+    "apiRuntime": "node:20"
+  },
+  "routes": [
+    {
+      "route": "/api/GetRoles",
+      "allowedRoles": [
+        "anonymous"
+      ]
+    },
+    {
+      "route": "/api/Mcp",
+      "allowedRoles": [
+        "anonymous"
+      ]
+    },
+    {
+      "route": "/api/a/*",
+      "allowedRoles": [
+        "intranet"
+      ]
+    },
+    {
+      "route": "/apps/access-admin/*",
+      "allowedRoles": [
+        "access-admin"
+      ]
+    },
+    {
+      "route": "/apps/my-apps/*",
+      "allowedRoles": [
+        "my-apps"
+      ]
+    },
+    {
+      "route": "/apps/wiki/*",
+      "allowedRoles": [
+        "wiki"
+      ]
+    },
+    {
+      "route": "/*",
+      "allowedRoles": [
+        "intranet"
+      ]
+    }
+  ],
+  "responseOverrides": {
+    "401": {
+      "statusCode": 302,
+      "redirect": "/.auth/login/aad?post_login_redirect_uri=.referrer"
+    },
+    "403": {
+      "rewrite": "/misc/session-refresh.html"
+    },
+    "404": {
+      "rewrite": "/index.html"
+    }
+  }
+}

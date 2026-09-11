@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- PLACEHOLDER FAVICON — replace with your own mark. -->
+  <rect width="32" height="32" fill="#D3181F"/>
+  <rect x="8" y="8" width="16" height="4" fill="#FFFFFF"/>
+  <rect x="8" y="15" width="16" height="4" fill="#FFFFFF"/>
+  <rect x="8" y="22" width="9" height="4" fill="#FFFFFF"/>
+</svg>
