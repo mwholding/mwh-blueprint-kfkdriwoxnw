@@ -124,6 +124,11 @@ You do not need to create any containers: the code creates `app-data` and
 7. GitHub → **Actions** tab → the workflow **Deploy to Azure Static Web Apps** →
    **Run workflow** (or just push a commit). Wait for the green tick.
 
+   Runs from before you added the secret are green too, with a "Nothing was deployed"
+   notice: the workflow builds but skips the upload when there is no token, so a copy that
+   is not configured yet never shows a red X. Check the notice is gone from this run,
+   otherwise the secret name is not exactly `AZURE_STATIC_WEB_APPS_API_TOKEN`.
+
 Opening the site now sends you to a Microsoft sign-in that fails, because the Entra
 registration does not exist yet. That is the next step.
 

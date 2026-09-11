@@ -2,8 +2,14 @@
 # throwaway preview environment for every pull request (closed again when the PR closes).
 #
 # The one secret this needs is the Static Web App's deployment token, stored as the repository
-# secret AZURE_STATIC_WEB_APPS_API_TOKEN — see SETUP.md step 4. Nothing else in this workflow
-# needs credentials.
+# secret AZURE_STATIC_WEB_APPS_API_TOKEN — see SETUP.md step 4. Nothing else here needs
+# credentials.
+#
+# Without that secret the run stays GREEN and simply skips the deployment
+# (skip_deploy_on_missing_secrets below). That matters twice: the blueprint template itself has
+# nothing to deploy and must not show a permanent red X, and a fresh copy of it should not fail
+# on its first push, before its owner has reached step 4. The "Nothing was deployed" notice
+# below says so in the run summary, so a green run is never mistaken for a deployment.
 name: Deploy to Azure Static Web Apps
 
 on:
@@ -25,14 +31,23 @@ jobs:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and deploy
+    env:
+      # Secrets cannot be read in an `if:` condition, an env value can — this is how the notice
+      # step below knows whether a deployment token exists.
+      HAS_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN != '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # One route rule per apps/<name>/ folder, each requiring the role <name>. Needs no
       # secrets: it reads the repo, not Blob Storage. Who holds that role is decided at login
       # from access.json, so open-vs-restricted stays a runtime switch with no deploy.
       - name: Generate per-app route rules
         run: node misc/generate-app-routes.js
+
+      - name: Nothing was deployed
+        if: env.HAS_TOKEN != 'true'
+        run: |
+          echo "::notice title=Nothing was deployed::No AZURE_STATIC_WEB_APPS_API_TOKEN secret in this repository, so the site was built but not uploaded. That is expected in the blueprint template. In your own copy, add the secret as described in SETUP.md step 4 and push again."
 
       - name: Build and deploy
         uses: Azure/static-web-apps-deploy@v1
@@ -43,6 +58,7 @@ jobs:
           app_location: "/"    # the static site lives at the repository root
           api_location: "api"  # the managed Azure Functions
           output_location: ""  # no build step: plain HTML, CSS and JavaScript
+          skip_deploy_on_missing_secrets: true
 
   close_pull_request:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -54,3 +70,4 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           action: close
           app_location: "/"
+          skip_deploy_on_missing_secrets: true
