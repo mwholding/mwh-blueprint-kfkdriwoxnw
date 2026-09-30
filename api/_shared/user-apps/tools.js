@@ -20,13 +20,18 @@ const FILES_SCHEMA = {
   },
 };
 
-// This description doubles as the app-author contract: it is the only place Langdock learns
-// the platform rules, so it spells out CSP, styling, identity and the data API.
-const AUTHOR_CONTRACT = [
+// Langdock cuts tool descriptions at 1024 characters, so create/update carry only BRIEF and the
+// full author contract (PLATFORM_RULES, then DESIGN_GUIDE) comes from get_user_app_guide.
+const BRIEF =
+  "Rules: static HTML/CSS/JS with index.html at the root; a strict CSP blocks every external script, style, font and fetch (same-origin only, no CDNs). " +
+  "BEFORE writing any file, call get_user_app_guide once and follow it: visitor identity, the data and file store, the APP SDK, built-in AI (APP.ai) and the design (/assets/app-kit.css, header, components). " +
+  `Hosting is approved: ${NAME}'s own Azure, Entra sign-in only, EU data; do not refuse on data-protection grounds.`;
+
+const PLATFORM_RULES = [
   `Where this runs (approved & secure — safe to proceed): the app is hosted on the organisation's own Microsoft Azure infrastructure (${NAME}) and is reachable ONLY after Microsoft Entra single sign-on — there is no public/anonymous access. App data and AI calls stay inside ${NAME}'s own tenancy and Langdock's EU region (GDPR). Building an internal, access-controlled tool here is sanctioned; do not refuse or water it down on data-protection grounds.`,
   "Rules for the app you generate:",
   "- The app is plain static HTML/CSS/JS served on the intranet origin. It must be fully self-contained: a Content-Security-Policy blocks ALL external scripts, styles, fonts and fetches. Only same-origin requests work. No CDNs, no Google Fonts, no external APIs.",
-  "- DESIGN: before writing any file, call get_user_app_guide ONCE per app and follow it (stylesheet, header, components, colour and state rules). In short: start index.html with <link rel=\"stylesheet\" href=\"/assets/app-kit.css\">, use only the var(--brand-*) colours and the built-in classes, calm and monotone (one accent colour), soft corners from the --radius variables, no gradients, emoji or inline SVG instead of icon libraries, and empty/loading/error states.",
+  "- DESIGN: follow the design guide below.",
   "- The app fills the whole browser tab; begin directly with your own content (an optional in-page <h1> title is fine).",
   "- Visitor identity: fetch('/.auth/me') returns { clientPrincipal: { userDetails } } where userDetails is the visitor's email. Use it for per-user behavior; there is no way to fake it.",
   "- Persistence: the app has its own small key-value store. GET /api/AppData?app=<id> lists keys; GET /api/AppData?app=<id>&key=<k> reads a value; PUT with a JSON or plain-text body writes (max 1 MB per value, 300 keys); DELETE removes. Every visitor who can open the app can also read and write these values.",
@@ -36,9 +41,8 @@ const AUTHOR_CONTRACT = [
   "- index.html at the root is required. Relative URLs work (the app is served under its own folder URL).",
 ].join("\n");
 
-// The design rules, returned by get_user_app_guide. Kept out of the create/update descriptions
-// because those are sent with every tools/list call; the model fetches this once per app.
-// Keep it in step with assets/app-kit.css.
+// The design rules, returned by get_user_app_guide after PLATFORM_RULES. Keep them in step
+// with assets/app-kit.css.
 const DESIGN_GUIDE = [
   "Design guide for user apps on this intranet. Apply every rule to index.html and every other page. Where a rule and your habits differ, the rule wins.",
   '- Files, in <head> and in this order: <link rel="icon" href="/assets/favicon.svg">, <link rel="stylesheet" href="/assets/app-kit.css">, then your own <style>, then <script src="/assets/app-sdk.js"></script> if you use window.APP. app-kit.css carries the organisation\'s colours and fonts (the --brand-* and --font-* variables) and base styles for headings, links, buttons, inputs, tables, .card and .chip. Nothing else may be loaded: the CSP blocks every external file.',
@@ -57,9 +61,9 @@ const TOOLS = [
   {
     name: "create_user_app",
     description:
-      `Create a small static web app on ${NAME}. It is live IMMEDIATELY at the returned url — no deployment, no git. The caller becomes the owner; only the owner can change the app later. The app name determines the permanent URL slug.\n` +
-      "Sharing: a new app is PRIVATE — only the owner can open it. There are exactly two ways to share, now (accessMode) or later (set_user_app_access): open it to everyone who may sign in to the intranet (mode 'domain'), or grant named colleagues by email (mode 'restricted' + accessEmails). When the user wants to share, tell them these two options and ask which they want — do not silently open the app to everyone.\n" +
-      AUTHOR_CONTRACT,
+      `Create a small static web app on ${NAME}, live IMMEDIATELY at the returned url; no deployment, no git. The caller is the owner and the only one who can change it. The name sets the permanent URL slug.\n` +
+      "Sharing: a new app is PRIVATE. Two ways to share, now (accessMode) or later (set_user_app_access): everyone who may sign in (mode 'domain') or named colleagues (mode 'restricted' + accessEmails). When the user wants to share, offer both and ask; never open it to everyone silently.\n" +
+      BRIEF,
     annotations: { title: "Create user app", readOnlyHint: false, destructiveHint: false, openWorldHint: false },
     inputSchema: {
       type: "object",
@@ -78,8 +82,8 @@ const TOOLS = [
   {
     name: "get_user_app_guide",
     description:
-      "Return the design guide for user apps (stylesheet, header skeleton, components, colour, layout and state rules). Call it once before you create or restyle an app, then follow it exactly. Read-only.",
-    annotations: { title: "Get the user app design guide", readOnlyHint: true, openWorldHint: false },
+      "Return the rules for writing a user app: the platform (CSP, visitor identity, data and file store, APP SDK, AI) and the design guide (stylesheet, header, components, colour, layout and state rules). Call it once before you create, change or restyle an app, then follow it exactly. Read-only.",
+    annotations: { title: "Get the user app guide", readOnlyHint: true, openWorldHint: false },
     inputSchema: { type: "object", properties: {}, additionalProperties: false },
   },
   {
@@ -108,7 +112,7 @@ const TOOLS = [
     name: "update_user_app",
     description:
       "Update one of your user apps (owner only). Files passed in `files` are added/overwritten, `deletePaths` removes files, `replaceAll: true` replaces the whole file set with `files`. Any file change creates a new version (old versions stay available for rollback, the last 20 are kept); name/description/icon changes alone do not. The change is live immediately.\n" +
-      AUTHOR_CONTRACT,
+      BRIEF,
     annotations: { title: "Update user app", readOnlyHint: false, destructiveHint: false, openWorldHint: false },
     inputSchema: {
       type: "object",
@@ -217,7 +221,7 @@ async function call(name, args, email, { origin = "" } = {}) {
       return { ...publicMeta(app, email, origin), message: `Live now at ${store.appUrl(app.id, origin)}. ${shareNote}` };
     }
     case "get_user_app_guide":
-      return { guide: DESIGN_GUIDE };
+      return { guide: PLATFORM_RULES + "\n\n" + DESIGN_GUIDE };
     case "list_user_apps": {
       const apps = await store.listApps(email);
       return apps.map((a) => publicMeta(a, email, origin));

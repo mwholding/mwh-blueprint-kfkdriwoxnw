@@ -12,22 +12,28 @@ function tools(doc) {
   return { userApps, access: require("../_shared/access") };
 }
 
-test("the create and update descriptions stay short and point at the design guide", () => {
+// Langdock cuts tool descriptions at 1024 characters, so the author contract lives in the guide.
+test("every tool description fits Langdock's 1024 characters", () => {
+  const { userApps } = tools();
+  for (const t of userApps.TOOLS) assert.ok(t.description.length <= 1024, `${t.name}: ${t.description.length} chars`);
+});
+
+test("the create and update descriptions point at the guide", () => {
   const { userApps } = tools();
   for (const name of ["create_user_app", "update_user_app"]) {
     const d = userApps.TOOLS.find((t) => t.name === name).description;
     assert.ok(d.includes("get_user_app_guide"), name + " points at the guide");
     assert.ok(d.includes("/assets/app-kit.css"), name + " names the stylesheet");
-    assert.ok(d.length < 5000, `${name} stays slim (${d.length} chars)`);
+    assert.ok(d.includes("CSP"), name + " keeps the CSP rule");
   }
 });
 
-test("get_user_app_guide returns the design guide, read-only", async () => {
+test("get_user_app_guide returns the platform rules and the design guide, read-only", async () => {
   const { userApps } = tools();
   const tool = userApps.TOOLS.find((t) => t.name === "get_user_app_guide");
   assert.equal(tool.annotations.readOnlyHint, true);
   const { guide } = await userApps.call("get_user_app_guide", {}, "a@example.com");
-  for (const needle of ["/assets/app-kit.css", "app-header", "--brand-accent", "empty", "375px"]) {
+  for (const needle of ["Content-Security-Policy", "/.auth/me", "/api/AppData", "APP.ai(", "/assets/app-kit.css", "app-header", "--brand-accent", "empty", "375px"]) {
     assert.ok(guide.includes(needle), "guide mentions " + needle);
   }
 });

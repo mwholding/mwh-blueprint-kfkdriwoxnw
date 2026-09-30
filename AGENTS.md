@@ -175,18 +175,19 @@ lists them through `api/UserApps` (members; owners delete there too).
   the next step if the risk is re-assessed.
 - **Limits**: 8 MB per file, 24 MB per version, 40 files, 50 apps per owner, 300 data keys
   per app. Data files only from `DATA_FILE_TYPES` — **never** `text/html` or `image/svg+xml`.
-- **What the model learns**: the `create_user_app`/`update_user_app` descriptions carry the
-  platform rules (CSP, identity, data API, SDK, AI) and stay short, because every
-  `tools/list` sends them; the design rules are in `DESIGN_GUIDE`, returned by
-  `get_user_app_guide`. Keep both in step with `assets/app-kit.css`, `assets/app-sdk.js`
-  and the serving code; the tests check the descriptions stay short.
+- **What the model learns**: `get_user_app_guide` returns the author contract,
+  `PLATFORM_RULES` (CSP, identity, data API, SDK, AI) then `DESIGN_GUIDE`; the
+  `create_user_app`/`update_user_app` descriptions carry only `BRIEF` and send the model
+  there, because Langdock cuts every tool description at 1024 characters (a test checks it).
+  Keep all three in step with `assets/app-kit.css`, `assets/app-sdk.js` and the serving code.
 
 ## The Langdock connection (`/api/Mcp`)
 
 - **Tools**: `whoami` (in `api/Mcp/index.js`) and the user-app tools. An intranet app that
   should be usable from a chat gets `api/_shared/<id>/tools.js` (`TOOLS`, `handles`, `call`)
   wired into `api/Mcp/index.js`; each tool checks permissions itself. Langdock allows about
-  50 tools per connection. **A tool description is the only documentation the model gets**,
+  50 tools per connection. **A tool description is the only documentation the model gets** (Langdock cuts it at
+  1024 characters; longer rules go in a tool that returns them),
   and after any change to the tools the integration must be **re-synced in Langdock**.
 - **Reachable without a SWA session** (`/api/Mcp` is anonymous); all auth is in the function.
 - **A platform bug you must not "fix"**: SWA overwrites the `Authorization` header on
