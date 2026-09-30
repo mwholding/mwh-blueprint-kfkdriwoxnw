@@ -1,0 +1,17 @@
+{
+  "_readme": "The one file to edit to make this intranet yours; every key is explained in README.md. Changes take effect with the next push to main.",
+  "name": "ACME Intranet",
+  "tagline": "Every app you use at work, in one place — and the ones you build yourself.",
+  "adminEmails": [
+    "admin@acmefurniture.com"
+  ],
+  "langdock": {
+    "url": "https://app.langdock.com/",
+    "integrationName": "Intranet",
+    "model": "gpt-5.6-terra"
+  },
+  "brand": {
+    "accent": "#18181B",
+    "font": "ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  }
+}

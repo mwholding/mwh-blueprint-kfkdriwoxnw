@@ -1,0 +1,91 @@
+# Deploys this repository to Azure Static Web Apps.
+#
+#   push to main          -> the production site
+#   push to any branch    -> the one environment called "preview"
+#
+# Why one fixed preview instead of one per pull request: sign-in only works on an address that
+# is registered as a redirect URI in the Entra app registration, and Entra allows no wildcards
+# for work accounts. A per-PR preview gets a new address every time, so nobody could sign in to
+# it. The "preview" environment keeps its address, so it needs exactly one extra redirect URI
+# (SETUP.md step 5). The latest push to any branch other than main is what it shows.
+#
+# The one secret this needs is the Static Web App's deployment token, stored as the repository
+# secret AZURE_STATIC_WEB_APPS_API_TOKEN (SETUP.md step 4). Without it the run stays GREEN and
+# skips the upload (skip_deploy_on_missing_secrets), so the template itself and a fresh copy
+# never show a red X before the owner has reached that step. The "Nothing was deployed" notice
+# says so in the run summary, so a green run is never mistaken for a deployment.
+name: Deploy to Azure Static Web Apps
+
+on:
+  push:
+    branches: ["**"]
+  # "Run workflow" in the Actions tab: redeploy the chosen branch without a new commit, for
+  # example after adding the deployment token secret.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deployment per target at a time. Two runs uploading to the same environment make Azure
+# cancel the loser, which shows up as a red "Deployment Canceled" even though the other run
+# deployed the very same commit. All branches share the preview, so they share one group:
+# the newest push wins.
+concurrency:
+  group: swa-${{ github.ref_name == 'main' && 'production' || 'preview' }}
+  cancel-in-progress: true
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    name: Test, build and deploy
+    env:
+      # Secrets cannot be read in an `if:` condition, an env value can.
+      HAS_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      # The API's own tests (api/_tests): access rules, conflict-safe writes, the MCP door and
+      # user-app sharing. No Azure needed. node_modules is removed again so it is not uploaded;
+      # Azure installs the API's dependencies itself.
+      - name: Test the API
+        run: |
+          cd api
+          npm ci --no-audit --no-fund
+          npm test
+          rm -rf node_modules
+
+      # One route rule per apps/<name>/ folder, each requiring the role <name>. Reads the
+      # repository, not Blob Storage. Who holds that role is decided at sign-in from
+      # access.json, so open-vs-restricted stays a runtime switch with no deploy.
+      - name: Generate per-app route rules
+        run: node misc/access-generate-routes.js
+
+      # site.config.json is the one file an organisation edits. Its colours and fonts become
+      # assets/brand.css, and the functions get their own copy, because Azure deploys only
+      # the api/ folder to them.
+      - name: Apply site.config.json
+        run: |
+          node misc/site-generate-brand.js
+          cp site.config.json api/site.config.json
+
+      - name: Nothing was deployed
+        if: env.HAS_TOKEN != 'true'
+        run: |
+          echo "::notice title=Nothing was deployed::No AZURE_STATIC_WEB_APPS_API_TOKEN secret in this repository, so the site was tested and built but not uploaded. That is expected in the blueprint template. In your own copy, add the secret as described in SETUP.md step 4 and push again."
+
+      - name: Build and deploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: upload
+          app_location: "/"    # the static site lives at the repository root
+          api_location: "api"  # the managed Azure Functions
+          output_location: ""  # no build step: plain HTML, CSS and JavaScript
+          skip_deploy_on_missing_secrets: true
+          # Only main deploys production; every other branch goes to "preview" (see the top).
+          production_branch: "main"
+          deployment_environment: ${{ github.ref_name != 'main' && 'preview' || '' }}

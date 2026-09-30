@@ -1,0 +1,111 @@
+/* The design kit — linked as the FIRST stylesheet of every page and every user app:
+     <link rel="stylesheet" href="/assets/app-kit.css">
+   It imports the brand tokens (colours and fonts) and styles the base elements from them.
+   Pages and apps build on the tokens and the classes below; their own styles load after.
+
+   TO REBRAND, EDIT THE "brand" SECTION OF site.config.json. It becomes assets/brand.css on
+   every deploy (misc/site-generate-brand.js). Nothing below names a colour or a font family
+   directly; it all reads var(--brand-*) / var(--font-*). See README.md "Branding".
+
+   The look: calm and monotone. One accent (by default near-black) on neutral greys, white
+   surfaces on a very light page, 1px hairlines, soft corners, generous whitespace, and
+   shadows only as a faint lift on hover or for things that float (dialogs, panels). */
+
+@import url("/assets/brand.css");
+
+:root{
+  /* Shape, space and motion — not brand-specific, so they live here. */
+  --radius-sm:6px;           /* chips inside controls, small buttons */
+  --radius:8px;              /* buttons, inputs */
+  --radius-lg:12px;          /* cards, panels, dialogs */
+  --shadow-lift:0 1px 2px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.05);
+  --shadow-float:0 12px 40px -12px rgba(0,0,0,.25);
+  --brand-gutter:clamp(16px,4vw,48px);
+  --brand-max:1200px;
+  --ease-out:cubic-bezier(.2,.7,.2,1);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--brand-soft);color:var(--brand-ink);
+  font-family:var(--font-sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+/* Type — sentence case everywhere; .eyebrow is the only uppercase element. */
+h1,h2,h3,h4{color:var(--brand-ink);line-height:1.2;margin:0 0 10px;letter-spacing:-.015em}
+h1{font-size:clamp(26px,3vw,34px);font-weight:700;letter-spacing:-.025em}
+h2{font-size:clamp(19px,2vw,22px);font-weight:650;margin-top:28px}
+h3{font-size:16px;font-weight:600;margin-top:20px}
+h4{font-size:15px;font-weight:600;margin-top:16px}
+p{margin:0 0 12px}
+small{font-size:13px}
+.lead{font-size:16px;color:var(--brand-mute);max-width:62ch}
+.muted{color:var(--brand-mute)}
+.eyebrow{font-weight:600;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--brand-mute);margin:0 0 8px}
+
+/* One big figure per screen, never bold. */
+.stat{font-family:var(--font-accent);font-weight:400;font-size:clamp(40px,6vw,72px);line-height:1;letter-spacing:-.02em;color:var(--brand-ink)}
+
+/* Links in running text are underlined. Structural links (a whole card, a nav item) opt out
+   with class "plain". */
+a{color:var(--brand-accent);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;transition:color 140ms var(--ease-out)}
+a:hover{color:var(--brand-accent-hover)}
+a.plain,a.card{text-decoration:none}
+
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;background:var(--brand-soft);border:1px solid var(--brand-line);border-radius:var(--radius-sm)}
+pre{padding:12px 14px;overflow-x:auto}
+code{padding:1px 6px}
+hr{border:0;border-top:1px solid var(--brand-line);margin:24px 0}
+
+/* Layout: <main class="wrap"> centres content like every page. */
+.wrap{max-width:var(--brand-max);margin:0 auto;padding:0 var(--brand-gutter)}
+main.wrap{padding-top:clamp(24px,4vw,44px);padding-bottom:clamp(48px,6vw,80px)}
+
+/* The header of every app: back to the home page, then the app's name. One row only. */
+.app-header{background:var(--brand-paper);border-bottom:1px solid var(--brand-line)}
+.app-header .wrap{height:60px;display:flex;align-items:center;gap:12px}
+.app-header .back{display:flex;align-items:center;gap:10px;color:var(--brand-mute);font-size:13px;text-decoration:none}
+.app-header .back img{height:24px;width:auto;display:block}
+.app-header .back:hover{color:var(--brand-ink)}
+.app-header .apptitle{font-size:14px;font-weight:600;color:var(--brand-ink);padding-left:12px;border-left:1px solid var(--brand-line)}
+
+/* Controls: 40px tall, soft corners. The plain <button> is the primary action. */
+button,input,textarea,select{font-family:inherit;font-size:14px;color:var(--brand-ink)}
+button{min-height:40px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--brand-accent);color:var(--brand-paper);border:1px solid var(--brand-accent);border-radius:var(--radius);
+  padding:9px 16px;font-weight:600;cursor:pointer;transition:background 140ms var(--ease-out),border-color 140ms var(--ease-out),color 140ms var(--ease-out)}
+button:hover{background:var(--brand-accent-hover);border-color:var(--brand-accent-hover)}
+button:active{transform:translateY(1px)}
+button:disabled{background:var(--brand-line);border-color:var(--brand-line);color:var(--brand-mute);cursor:default;transform:none}
+button.secondary{background:var(--brand-paper);color:var(--brand-ink);border-color:var(--brand-line)}
+button.secondary:hover{background:var(--brand-soft);border-color:var(--brand-accent-mid)}
+button.ghost{background:transparent;color:var(--brand-mute);border-color:transparent}
+button.ghost:hover{background:var(--brand-accent-tint);color:var(--brand-ink)}
+input,textarea,select{background:var(--brand-paper);border:1px solid var(--brand-line);border-radius:var(--radius);padding:9px 12px;width:100%;max-width:480px;
+  transition:border-color 140ms var(--ease-out),box-shadow 140ms var(--ease-out)}
+input::placeholder,textarea::placeholder{color:var(--brand-accent-mid)}
+input:hover,textarea:hover,select:hover{border-color:var(--brand-accent-mid)}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand-accent);box-shadow:0 0 0 3px var(--brand-accent-tint)}
+button:focus-visible,a:focus-visible{outline:2px solid var(--brand-accent);outline-offset:2px}
+label{display:block;font-size:13px;font-weight:600;margin:14px 0 6px;color:var(--brand-ink)}
+
+/* Cards: white, 1px hairline, soft corners; a faint lift on hover when clickable. */
+.card{background:var(--brand-paper);border:1px solid var(--brand-line);border-radius:var(--radius-lg);padding:22px;margin-bottom:16px}
+a.card:hover,.card.clickable:hover{border-color:var(--brand-accent-mid);box-shadow:var(--shadow-lift)}
+
+/* Tables: hairline rules, a quiet header row. */
+table{border-collapse:separate;border-spacing:0;width:100%;background:var(--brand-paper);border:1px solid var(--brand-line);border-radius:var(--radius-lg);overflow:hidden}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--brand-line);font-size:14px}
+th{font-size:12px;font-weight:600;color:var(--brand-mute);background:var(--brand-soft)}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+
+/* Small status labels — the one place a pill shape is used. */
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;line-height:1;padding:5px 9px;
+  border-radius:999px;border:1px solid var(--brand-line);color:var(--brand-mute);background:var(--brand-paper)}
+.chip.accent{border-color:var(--brand-accent);color:var(--brand-paper);background:var(--brand-accent)}
+.chip.ok{border-color:transparent;color:var(--brand-ok);background:var(--brand-ok-tint)}
+
+/* Empty, loading and error states: a quiet panel with a next step. */
+.notice{background:var(--brand-paper);border:1px dashed var(--brand-line);border-radius:var(--radius-lg);padding:28px;color:var(--brand-mute);max-width:640px}
+.notice strong{color:var(--brand-ink)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>No access</title>
+<meta name="robots" content="noindex, nofollow">
+<!-- Self-contained on purpose: this page is also shown to people who are not signed in, and
+     /assets/* (the design kit, logo and icon) is for signed-in people only. The colours are
+     the default monotone palette; they do not follow site.config.json. -->
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:15px;line-height:1.6;
+  color:#18181B;background:#F7F7F8;display:grid;place-items:center;padding:24px;-webkit-font-smoothing:antialiased}
+.panel{width:min(520px,100%);background:#fff;border:1px solid #E4E4E7;border-radius:12px;padding:32px}
+.mark{width:40px;height:40px;border-radius:10px;background:#F4F4F5;border:1px solid #E4E4E7;display:grid;place-items:center;margin-bottom:20px}
+h1{font-size:22px;letter-spacing:-.02em;line-height:1.25;margin:0 0 10px}
+p{margin:0 0 12px;color:#5B5B66}
+p strong{color:#18181B}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 4px}
+a.button{display:inline-flex;align-items:center;min-height:40px;padding:9px 16px;border-radius:8px;font-weight:600;font-size:14px;text-decoration:none;
+  background:#18181B;color:#fff;border:1px solid #18181B}
+a.button:hover{background:#3F3F46}
+a.button.secondary{background:#fff;color:#18181B;border-color:#E4E4E7}
+a.button.secondary:hover{background:#F7F7F8}
+.fineprint{font-size:13px;border-top:1px solid #E4E4E7;padding-top:14px;margin-top:20px}
+</style>
+</head>
+<body>
+<main class="panel">
+  <div class="mark" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#18181B" stroke-width="2" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+  <h1>No access to this page</h1>
+  <p><strong>Most likely your sign-in is out of date.</strong> Your access rights are attached
+  to your session when you sign in, so after a change an older session does not know about
+  it yet. Signing out and back in fixes that and brings you straight back here.</p>
+  <div class="actions">
+    <a class="button" id="relogin" href="/.auth/logout">Sign out and back in</a>
+    <a class="button secondary" href="/">Home page</a>
+  </div>
+  <p class="fineprint">Still here after signing in again? Then this page is restricted and your
+  account has no access. Ask the owner of the app, or whoever manages access, to add you.</p>
+</main>
+<script>
+// Served through a 403 rewrite, so the address bar still shows the page the person wanted.
+// Sign out, sign in, and come back to exactly that address.
+(function () {
+  var target = location.pathname + location.search + location.hash;
+  var login = "/.auth/login/aad?post_login_redirect_uri=" + encodeURIComponent(target);
+  document.getElementById("relogin").href = "/.auth/logout?post_logout_redirect_uri=" + encodeURIComponent(login);
+})();
+</script>
+</body>
+</html>

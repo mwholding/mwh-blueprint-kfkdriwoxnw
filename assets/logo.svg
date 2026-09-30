@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" width="28" height="28" role="img" aria-label="Home">
+  <!-- PLACEHOLDER MARK — replace this file with your own logo (SVG preferred). The header sizes
+       it by height (24–28px), so any width works. -->
+  <rect width="28" height="28" rx="7" fill="#18181B"/>
+  <rect x="7" y="7" width="6" height="6" rx="1.5" fill="#FFFFFF"/>
+  <rect x="15" y="7" width="6" height="6" rx="1.5" fill="#FFFFFF" fill-opacity=".55"/>
+  <rect x="7" y="15" width="6" height="6" rx="1.5" fill="#FFFFFF" fill-opacity=".55"/>
+  <rect x="15" y="15" width="6" height="6" rx="1.5" fill="#FFFFFF"/>
+</svg>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hello Langdock</title>
+<link rel="icon" href="/assets/favicon.svg">
+<link rel="stylesheet" href="/assets/app-kit.css">
+<style>
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:24px}
+.card h2{margin-top:0;font-size:17px}
+.count{font-size:40px;font-weight:700;letter-spacing:-.02em;margin:4px 0 12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row input{flex:1 1 200px}
+#answer{margin-top:14px;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<header class="app-header"><div class="wrap">
+  <a class="back" href="/"><img src="/assets/logo.svg" alt=""><span>Home</span></a>
+  <span class="apptitle">Hello Langdock</span>
+</div></header>
+<main class="wrap">
+  <h1>Hello, <span id="who">there</span></h1>
+  <p class="lead">An example of a user app: built from a chat, stored in the intranet, shared with everyone. Ask Langdock to change it, or to build your own.</p>
+
+  <div class="grid">
+    <section class="card">
+      <p class="eyebrow">Shared data</p>
+      <h2>Hellos said so far</h2>
+      <p class="count" id="count">…</p>
+      <button id="hello" type="button">Say hello</button>
+      <p class="muted" id="last" style="margin:12px 0 0"></p>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">AI, without a key</p>
+      <h2>Ask a question</h2>
+      <div class="row">
+        <input id="q" type="text" value="Suggest three small apps a team could build here." aria-label="Question">
+        <button class="secondary" id="ask" type="button">Ask</button>
+      </div>
+      <p class="muted" id="answer"></p>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Make it yours</p>
+      <h2>Change this app</h2>
+      <p class="muted">In a Langdock chat, tag the intranet and say: <em>“Change the Hello Langdock app so it also shows who said hello last.”</em> Only its owner can change it; anyone can build their own.</p>
+    </section>
+  </div>
+</main>
+<script src="/assets/app-sdk.js"></script>
+<script>
+// window.APP comes from /assets/app-sdk.js: me() is the signed-in person, data.* is this app's
+// shared store (every visitor reads and writes the same values), ai() calls the intranet's AI.
+(async () => {
+  const me = await APP.me();
+  document.getElementById("who").textContent = (me.email || "there").split("@")[0];
+
+  async function show() {
+    const state = (await APP.data.getJSON("hellos").catch(() => null)) || { count: 0 };
+    document.getElementById("count").textContent = state.count;
+    document.getElementById("last").textContent = state.last ? "Last hello from " + state.last.split("@")[0] + "." : "Be the first.";
+    return state;
+  }
+  await show();
+
+  document.getElementById("hello").addEventListener("click", async (e) => {
+    e.target.disabled = true;
+    try {
+      const state = (await APP.data.getJSON("hellos")) || { count: 0 };
+      await APP.data.set("hellos", { count: state.count + 1, last: me.email });
+      await show();
+      APP.toast("Hello said.");
+    } catch (err) {
+      APP.toast("That did not work: " + err.message);
+    } finally {
+      e.target.disabled = false;
+    }
+  });
+
+  document.getElementById("ask").addEventListener("click", async (e) => {
+    const out = document.getElementById("answer");
+    e.target.disabled = true;
+    out.textContent = "Thinking…";
+    try {
+      out.textContent = await APP.ai(document.getElementById("q").value, { maxTokens: 300 });
+    } catch (err) {
+      out.textContent = "The AI is not available right now (" + err.message + ").";
+    } finally {
+      e.target.disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>

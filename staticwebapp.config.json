@@ -1,0 +1,94 @@
+{
+  "mimeTypes": {
+    ".md": "text/markdown; charset=utf-8",
+    ".json": "application/json",
+    ".woff2": "font/woff2",
+    ".svg": "image/svg+xml",
+    ".png": "image/png",
+    ".jpeg": "image/jpeg"
+  },
+  "globalHeaders": {
+    "X-Robots-Tag": "noindex, nofollow",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "same-origin"
+  },
+  "auth": {
+    "rolesSource": "/api/GetRoles",
+    "identityProviders": {
+      "azureActiveDirectory": {
+        "registration": {
+          "openIdIssuer": "https://login.microsoftonline.com/common/v2.0",
+          "clientIdSettingName": "AAD_CLIENT_ID",
+          "clientSecretSettingName": "AAD_CLIENT_SECRET"
+        }
+      }
+    }
+  },
+  "platform": {
+    "apiRuntime": "node:20"
+  },
+  "routes": [
+    {
+      "route": "/api/GetRoles",
+      "allowedRoles": [
+        "anonymous"
+      ]
+    },
+    {
+      "route": "/api/Mcp",
+      "allowedRoles": [
+        "anonymous"
+      ]
+    },
+    {
+      "route": "/misc/*.js",
+      "statusCode": 404
+    },
+    {
+      "route": "/site.config.json",
+      "statusCode": 404
+    },
+    {
+      "route": "/api/*",
+      "allowedRoles": [
+        "signed-in"
+      ]
+    },
+    {
+      "route": "/assets/*",
+      "allowedRoles": [
+        "signed-in"
+      ]
+    },
+    {
+      "route": "/apps/hello-intranet/*",
+      "allowedRoles": [
+        "hello-intranet"
+      ]
+    },
+    {
+      "route": "/apps/access-admin/*",
+      "allowedRoles": [
+        "access-admin"
+      ]
+    },
+    {
+      "route": "/*",
+      "allowedRoles": [
+        "intranet"
+      ]
+    }
+  ],
+  "responseOverrides": {
+    "401": {
+      "statusCode": 302,
+      "redirect": "/.auth/login/aad?post_login_redirect_uri=.referrer"
+    },
+    "403": {
+      "rewrite": "/misc/access-error.html"
+    },
+    "404": {
+      "rewrite": "/misc/not-found.html"
+    }
+  }
+}

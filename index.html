@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Intranet</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<!-- app-kit.css imports assets/brand.css, which is generated from site.config.json. -->
+<link rel="stylesheet" href="/assets/app-kit.css">
+<style>
+/* Home page only. Everything reads the brand tokens and the shapes from app-kit.css. */
+body{background:var(--brand-soft)}
+header.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--brand-paper) 88%,transparent);backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--brand-line)}
+header.top .wrap{height:60px;display:flex;align-items:center;gap:12px}
+header.top .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--brand-ink);font-weight:600;font-size:15px}
+header.top .brand img{height:28px;width:auto;display:block}
+header.top .who{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--brand-mute);min-width:0}
+header.top .avatar{flex:none;width:30px;height:30px;border-radius:50%;background:var(--brand-accent-tint);color:var(--brand-ink);display:grid;place-items:center;font-weight:600;font-size:13px}
+header.top #signed-in{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+header.top .who a{color:var(--brand-mute);text-decoration:none;padding:6px 10px;border-radius:var(--radius);border:1px solid var(--brand-line);background:var(--brand-paper)}
+header.top .who a:hover{color:var(--brand-ink);border-color:var(--brand-accent-mid)}
+
+.hero{padding:clamp(28px,5vw,56px) 0 4px;display:flex;justify-content:space-between;align-items:flex-end;gap:20px 32px;flex-wrap:wrap}
+.hero h1{margin:0 0 6px}
+.hero .lead{margin:0}
+.hero .actions{display:flex;gap:8px;flex-wrap:wrap}
+a.build{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:9px 16px;border-radius:var(--radius);font-weight:600;font-size:14px;
+  background:var(--brand-accent);color:var(--brand-paper);border:1px solid var(--brand-accent);text-decoration:none;transition:background 140ms var(--ease-out)}
+a.build:hover{background:var(--brand-accent-hover);color:var(--brand-paper)}
+
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:clamp(24px,4vw,40px) 0 16px}
+.search{position:relative;flex:1 1 240px;max-width:360px;margin:0;font-weight:400}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--brand-accent-mid);pointer-events:none}
+.search input{max-width:none;padding-left:36px;height:40px}
+.seg{display:inline-flex;padding:3px;gap:2px;background:var(--brand-accent-tint);border-radius:calc(var(--radius) + 2px)}
+.seg button{white-space:nowrap;min-height:34px;background:transparent;color:var(--brand-mute);border:0;border-radius:var(--radius);padding:6px 12px;font-weight:500;font-size:13px}
+.seg button:hover{background:transparent;color:var(--brand-ink)}
+.seg button[aria-pressed="true"]{background:var(--brand-paper);color:var(--brand-ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.count{font-size:13px;color:var(--brand-mute);margin-left:auto}
+
+.tiles{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
+.tile{position:relative;display:flex;flex-direction:column;gap:6px;background:var(--brand-paper);border:1px solid var(--brand-line);border-radius:var(--radius-lg);
+  padding:18px 18px 16px;min-height:172px;transition:border-color 140ms var(--ease-out),box-shadow 140ms var(--ease-out),transform 140ms var(--ease-out)}
+.tile:hover{border-color:var(--brand-accent-mid);box-shadow:var(--shadow-lift);transform:translateY(-1px)}
+.tile:focus-within{border-color:var(--brand-accent)}
+.tile .top{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.tile .icon{flex:none;width:40px;height:40px;border-radius:10px;background:var(--brand-soft);border:1px solid var(--brand-line);display:grid;place-items:center;font-size:20px;line-height:1;font-weight:600;color:var(--brand-ink)}
+.tile h3{margin:0;font-size:15.5px;font-weight:600;line-height:1.3}
+/* The whole tile opens the app; the delete button sits above that link. */
+.tile a.open{color:var(--brand-ink);text-decoration:none}
+.tile a.open::after{content:"";position:absolute;inset:0;border-radius:inherit}
+.tile a.open:focus-visible{outline:none}
+.tile p{margin:0;font-size:13.5px;line-height:1.55;color:var(--brand-mute);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tile .meta{margin-top:auto;padding-top:12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--brand-mute)}
+.tile .del{position:relative;z-index:1;margin-left:auto;min-height:0;padding:4px 8px;font-size:12px;font-weight:500}
+.tile.soon{background:transparent;border-style:dashed}
+.tile.soon:hover{box-shadow:none;transform:none;border-color:var(--brand-line)}
+.tile.soon h3,.tile.soon p{color:var(--brand-mute)}
+
+footer.foot{margin-top:clamp(48px,6vw,80px);border-top:1px solid var(--brand-line)}
+footer.foot .wrap{padding:20px var(--brand-gutter);display:flex;gap:6px 18px;flex-wrap:wrap;font-size:12.5px;color:var(--brand-mute)}
+
+/* How-to side panel */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.25);opacity:0;visibility:hidden;transition:opacity .2s ease;z-index:50}
+.backdrop.open{opacity:1;visibility:visible}
+.howto{position:fixed;top:8px;right:8px;bottom:8px;width:min(460px,calc(100% - 16px));background:var(--brand-paper);border:1px solid var(--brand-line);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-float);transform:translateX(calc(100% + 16px));visibility:hidden;transition:transform .24s var(--ease-out),visibility 0s .24s;z-index:51;display:flex;flex-direction:column;overflow:hidden}
+.howto.open{transform:translateX(0);visibility:visible;transition:transform .24s var(--ease-out)}
+.howto-head{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--brand-line)}
+.howto-head h2{margin:0;font-size:16px}
+.howto-head .x{margin-left:auto}
+.howto-body{overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:22px}
+.howto-body h3{margin:0 0 10px}
+.howto-body ol,.howto-body ul{margin:0;padding-left:20px;font-size:13.5px;color:var(--brand-mute)}
+.howto-body li{margin-bottom:8px}
+.howto-body li strong{color:var(--brand-ink)}
+.example{border:1px solid var(--brand-line);border-radius:var(--radius);margin-bottom:10px;overflow:hidden}
+.example .bar{display:flex;align-items:center;gap:9px;padding:8px 8px 8px 12px;background:var(--brand-soft);border-bottom:1px solid var(--brand-line);font-weight:600;font-size:13.5px}
+.example .bar button{margin-left:auto;min-height:30px;padding:4px 10px;font-size:12px}
+.example p{margin:0;padding:12px;font-size:13px;color:var(--brand-mute)}
+@media (max-width:640px){.count{margin-left:0;width:100%}header.top #signed-in{display:none}.search{max-width:none}.seg{max-width:100%;overflow-x:auto}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand plain" href="/">
+      <img src="/assets/logo.svg" alt="">
+      <span id="short-name">Intranet</span>
+    </a>
+    <span class="who">
+      <span class="avatar" id="avatar" aria-hidden="true"></span>
+      <span id="signed-in"></span>
+      <a href="/.auth/logout">Sign out</a>
+    </span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <div>
+      <h1 id="site-name">Intranet</h1>
+      <p class="lead" id="tagline"></p>
+    </div>
+    <div class="actions">
+      <button class="secondary" id="howto-open" type="button">How it works</button>
+      <a class="build" id="build" href="https://app.langdock.com/" target="_blank" rel="noopener" title="Opens a Langdock chat with a starter prompt">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Build an app</a>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <label class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="search" id="q" placeholder="Find an app" aria-label="Find an app" autocomplete="off">
+    </label>
+    <div class="seg" role="group" aria-label="Show">
+      <button type="button" data-view="all" aria-pressed="true">All</button>
+      <button type="button" data-view="intranet" aria-pressed="false">Intranet apps</button>
+      <button type="button" data-view="colleagues" aria-pressed="false">Built by colleagues</button>
+      <button type="button" data-view="mine" aria-pressed="false">Mine</button>
+    </div>
+    <span class="count" id="count"></span>
+  </div>
+  <div id="tiles"><p class="muted">Loading your apps…</p></div>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <span id="foot-name"></span>
+    <span>Only the apps you may open are shown. Access is managed in access management.</span>
+  </div>
+</footer>
+
+<div class="backdrop" id="backdrop"></div>
+<aside class="howto" id="howto" aria-hidden="true" aria-label="How to build an app">
+  <div class="howto-head">
+    <h2>Build your own app</h2>
+    <button class="ghost x" id="howto-close" type="button" aria-label="Close" title="Close">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="howto-body">
+    <div>
+      <h3>How it works</h3>
+      <ol>
+        <li><strong>Open a Langdock chat</strong> and tag <code>@<span class="ld-name">Intranet</span></code>. Without the tag Langdock can only talk, not build.</li>
+        <li><strong>Describe the tool</strong> in plain words, or copy an example below.</li>
+        <li><strong>It is live immediately</strong> at its own address and appears here as a tile.</li>
+      </ol>
+    </div>
+    <div>
+      <h3>Good to know</h3>
+      <ul>
+        <li><strong>Private until you share it.</strong> Say "share this with everyone" or "share it with anna@… and ben@…".</li>
+        <li><strong>It remembers data</strong> for everyone who opens it, and can store PDFs and images.</li>
+        <li><strong>It can use AI</strong> to summarise, extract or draft, without any key.</li>
+        <li><strong>Change it any time</strong> with another message. Every version is kept: "roll back to the previous version".</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Examples to copy</h3>
+      <div id="examples"></div>
+    </div>
+  </div>
+</aside>
+
+<script>
+// ---------------------------------------------------------------------------
+// The portal: every app the visitor may open, as tiles. Two sources, one grid:
+//   /api/Apps      the intranet apps: registry entries in access management
+//                  marked "show on home", with a live "may open" flag
+//   /api/UserApps  the user apps built in Langdock that the visitor may open
+// Names and the Langdock link come from site.config.json through /api/Site.
+// Nothing about access is decided here; the APIs only return what is allowed.
+// ---------------------------------------------------------------------------
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+async function json(url, options) {
+  const r = await fetch(url, options);
+  if (!r.ok) throw new Error(url + " -> " + r.status);
+  return r.json();
+}
+
+let ALL = [];      // [{ kind: "intranet" | "user", ... }]
+let ME = "";
+let LD_NAME = "Intranet";
+
+// Same-site paths and http(s) links only: an admin types the URL, and a "javascript:" link
+// on the home page would run as the visitor.
+const safeUrl = (u) => (/^(\/|https?:\/\/)/i.test(u || "") ? u : "");
+
+async function load() {
+  const [site, registry, userApps, me] = await Promise.all([
+    json("/api/Site").catch(() => ({})),
+    json("/api/Apps").then((d) => d.apps || {}).catch(() => null),
+    json("/api/UserApps").then((d) => d.apps || []).catch(() => null),
+    json("/.auth/me").catch(() => ({})),
+  ]);
+  applySite(site);
+  ME = ((me.clientPrincipal || {}).userDetails || "");
+  document.getElementById("signed-in").textContent = ME;
+  document.getElementById("avatar").textContent = (ME[0] || "").toUpperCase();
+  if (!registry && !userApps) {
+    document.getElementById("tiles").innerHTML =
+      '<div class="notice"><strong>Your apps could not be loaded.</strong> Reload the page. If it keeps happening, open <a href="/.auth/me">/.auth/me</a> to see who you are signed in as.</div>';
+    return;
+  }
+  const intranet = Object.entries(registry || {})
+    .filter(([, a]) => a.showOnHome && safeUrl(a.url) && (a.allowed || a.status === "planned"))
+    .sort(([, a], [, b]) => a.order - b.order || a.label.localeCompare(b.label))
+    .map(([id, a]) => ({ kind: "intranet", id, name: a.label, description: a.description, url: safeUrl(a.url),
+      external: /^https?:/i.test(a.url), planned: a.status === "planned", gated: a.gated }));
+  const user = (userApps || []).map((a) => ({ kind: "user", ...a }));
+  ALL = [...intranet, ...user];
+  render();
+}
+
+function applySite(site) {
+  const name = site.name || "Intranet";
+  document.title = name;
+  document.getElementById("site-name").textContent = name;
+  document.getElementById("short-name").textContent = name;
+  document.getElementById("tagline").textContent = site.tagline || "";
+  document.getElementById("foot-name").textContent = name;
+  const ld = site.langdock || {};
+  LD_NAME = ld.integrationName || "Intranet";
+  document.querySelectorAll(".ld-name").forEach((el) => { el.textContent = LD_NAME; });
+  const base = ld.url || "https://app.langdock.com/";
+  document.getElementById("build").href = base + (base.includes("?") ? "&" : "?") + "q=" + encodeURIComponent("@" + LD_NAME + " build an app that ");
+}
+
+// ---- filters: the view lives in the URL hash (#mine), so a reload or a link keeps it ----
+const view = () => (["intranet", "colleagues", "mine"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "all");
+
+function visible() {
+  const q = document.getElementById("q").value.trim().toLowerCase();
+  const v = view();
+  return ALL.filter((a) =>
+    (v === "all" || (v === "intranet" && a.kind === "intranet") || (v === "colleagues" && a.kind === "user" && !a.owned) || (v === "mine" && a.kind === "user" && a.owned)) &&
+    (!q || (a.name + " " + (a.description || "") + " " + (a.owner || "")).toLowerCase().includes(q)));
+}
+
+const initial = (name) => (String(name || "?").trim()[0] || "?").toUpperCase();
+
+function tile(a) {
+  if (a.kind === "intranet") {
+    const label = a.planned ? "Coming soon" : a.external ? "External link" : a.gated ? "Restricted" : "Everyone";
+    const link = a.planned ? esc(a.name)
+      : '<a class="open" href="' + esc(a.url) + '"' + (a.external ? ' target="_blank" rel="noopener"' : "") + ">" + esc(a.name) + "</a>";
+    return '<div class="tile' + (a.planned ? " soon" : "") + '"><div class="top"><span class="icon" aria-hidden="true">' + esc(initial(a.name)) + "</span><h3>" + link + "</h3></div>"
+      + "<p>" + esc(a.description) + "</p>"
+      + '<div class="meta"><span class="chip">' + esc(label) + "</span></div></div>";
+  }
+  const by = a.owned ? '<span class="chip accent">Yours</span>' : '<span class="chip" title="' + esc(a.owner) + '">By ' + esc(String(a.owner).split("@")[0]) + "</span>";
+  return '<div class="tile"><div class="top"><span class="icon" aria-hidden="true">' + esc(a.icon || initial(a.name)) + "</span>"
+    + '<h3><a class="open" href="' + esc(a.url) + '">' + esc(a.name) + "</a></h3></div>"
+    + "<p>" + (esc(a.description) || "No description.") + "</p>"
+    + '<div class="meta">' + by + (a.owned ? '<span class="chip">' + (a.restricted ? "Private" : "Shared") + "</span>" : "")
+    + "<span>" + esc((a.updatedAt || "").slice(0, 10)) + "</span>"
+    + (a.owned ? '<button class="ghost del" type="button" data-id="' + esc(a.id) + '" data-name="' + esc(a.name) + '">Delete</button>' : "")
+    + "</div></div>";
+}
+
+function render() {
+  const v = view();
+  document.querySelectorAll(".seg button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === v)));
+  const list = visible();
+  const q = document.getElementById("q").value.trim();
+  document.getElementById("count").textContent = list.length === 1 ? "1 app" : list.length + " apps";
+  let empty = "";
+  if (!list.length) {
+    empty = q ? "No app matches “" + esc(q) + "”."
+      : v === "mine" ? "<strong>You have not built an app yet.</strong> Press “Build an app”, describe the tool you need, and it appears here."
+      : v === "colleagues" ? "No colleague has shared an app with you yet."
+      : "<strong>No apps are shared with your account yet.</strong> Build your own, or ask whoever manages access.";
+  }
+  document.getElementById("tiles").innerHTML = list.length
+    ? '<div class="tiles">' + list.map(tile).join("") + "</div>"
+    : '<div class="notice">' + empty + "</div>";
+}
+
+document.querySelector(".seg").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-view]");
+  if (b) location.hash = b.dataset.view === "all" ? "" : b.dataset.view;
+});
+window.addEventListener("hashchange", render);
+document.getElementById("q").addEventListener("input", render);
+
+// ---- delete a user app (owner only; the API checks it again) ----
+document.getElementById("tiles").addEventListener("click", async (e) => {
+  const b = e.target.closest(".del");
+  if (!b) return;
+  if (!confirm("Delete “" + b.dataset.name + "” for good? All its versions and stored data are removed.")) return;
+  b.disabled = true;
+  try {
+    await json("/api/UserApps?id=" + encodeURIComponent(b.dataset.id), { method: "DELETE" });
+    ALL = ALL.filter((a) => !(a.kind === "user" && a.id === b.dataset.id));
+    render();
+  } catch (err) {
+    b.disabled = false;
+    alert("The app could not be deleted. Reload and try again.");
+  }
+});
+
+// ---- how-to panel with example prompts ----
+const EXAMPLES = [
+  { icon: "📊", title: "Team budget tracker", text: "Build me an app called 'Team Budget Tracker' where I add budget lines (category, planned amount, actual amount, currency). Show planned vs actual per category with a bar for each and a grand total, keep currencies separate, and let me edit and delete lines. Save everything so my whole team sees the same numbers." },
+  { icon: "🏷️", title: "Supplier scorecard", text: "Build a 'Supplier Scorecard' app. I add suppliers (name, category, contact) and rate each 1–5 on price, quality, delivery and service. Save them and show a ranked table by total score, with a button to copy the table." },
+  { icon: "📅", title: "Contract deadlines", text: "Create a 'Contract Deadlines' app where I add each contract (name, counterparty, end date, notice period in months) and attach the contract PDF. Calculate the last date to give notice and highlight anything due within 6 months. Save and share with my team." },
+  { icon: "✅", title: "Onboarding checklist", text: "Build an 'Onboarding Checklist' for new colleagues: steps grouped by phase (Before day one, First day, First week, First month), each tickable with who did it and the date, plus a progress bar per phase. Save it so everyone involved sees the same ticks." },
+  { icon: "📌", title: "Meeting actions", text: "Make a 'Meeting Actions' app: add action items (task, owner email, due date, status) during a meeting, show an open-items table sorted by due date with overdue ones flagged. Anyone with access can add and update." },
+  { icon: "📝", title: "Summarise feedback with AI", text: "Build a 'Feedback Summary' app: I paste customer comments, it lists them, and a button uses AI to group them into themes with a count per theme and one example quote each. Save the comments and the last summary." },
+];
+document.getElementById("examples").innerHTML = EXAMPLES.map((e, i) =>
+  '<div class="example"><div class="bar"><span>' + esc(e.icon) + "</span><span>" + esc(e.title) + '</span><button class="secondary" type="button" data-i="' + i + '">Copy</button></div><p>' + esc(e.text) + "</p></div>").join("");
+document.getElementById("examples").addEventListener("click", async (e) => {
+  const b = e.target.closest("button[data-i]");
+  if (!b) return;
+  try { await navigator.clipboard.writeText(EXAMPLES[Number(b.dataset.i)].text); b.textContent = "Copied"; }
+  catch { b.textContent = "Select and copy"; }
+  setTimeout(() => { b.textContent = "Copy"; }, 1600);
+});
+const howto = document.getElementById("howto");
+const backdrop = document.getElementById("backdrop");
+const openHowto = () => { howto.classList.add("open"); backdrop.classList.add("open"); howto.setAttribute("aria-hidden", "false"); document.getElementById("howto-close").focus(); };
+const closeHowto = () => { howto.classList.remove("open"); backdrop.classList.remove("open"); howto.setAttribute("aria-hidden", "true"); };
+document.getElementById("howto-open").addEventListener("click", openHowto);
+document.getElementById("howto-close").addEventListener("click", closeHowto);
+backdrop.addEventListener("click", closeHowto);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeHowto(); });
+
+load();
+</script>
+</body>
+</html>

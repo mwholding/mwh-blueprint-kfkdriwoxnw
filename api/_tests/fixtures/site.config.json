@@ -1,0 +1,17 @@
+{
+  "_readme": "The configuration the tests run with, so they never depend on an organisation's own site.config.json.",
+  "name": "Test intranet",
+  "tagline": "",
+  "adminEmails": [
+    "you@example.com"
+  ],
+  "langdock": {
+    "url": "https://app.langdock.com/",
+    "integrationName": "Intranet",
+    "model": "test-model"
+  },
+  "brand": {
+    "accent": "#18181B",
+    "font": "system-ui, sans-serif"
+  }
+}

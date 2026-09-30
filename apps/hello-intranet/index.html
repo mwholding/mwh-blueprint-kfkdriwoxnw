@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hello Intranet</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="stylesheet" href="/assets/app-kit.css">
+<style>
+/* The example intranet app: copy this folder to start a new one (README "Adding an app"). */
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-top:24px}
+.card h2{margin-top:0;font-size:17px}
+.count{font-size:40px;font-weight:700;letter-spacing:-.02em;margin:4px 0 12px}
+ol.files{margin:0;padding-left:20px;color:var(--brand-mute);font-size:14px}
+ol.files li{margin-bottom:6px}
+</style>
+</head>
+<body>
+<header class="app-header"><div class="wrap">
+  <a class="back" href="/"><img src="/assets/logo.svg" alt=""><span>Home</span></a>
+  <span class="apptitle">Hello Intranet</span>
+</div></header>
+
+<main class="wrap">
+  <h1>Hello Intranet</h1>
+  <p class="lead">An example of an intranet app: a page in this repository, its own API with a
+  permission check, a stored document and an audit trail. Copy it to start your own.</p>
+
+  <div class="grid">
+    <section class="card">
+      <p class="eyebrow">Stored data</p>
+      <h2>Hellos said so far</h2>
+      <p class="count" id="count">…</p>
+      <button id="hello" type="button" disabled>Say hello</button>
+      <p class="muted" id="status" style="margin:12px 0 0">Loading…</p>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">How it is built</p>
+      <h2>Four files</h2>
+      <ol class="files">
+        <li><code>apps/hello-intranet/index.html</code> — this page</li>
+        <li><code>api/HelloIntranet/index.js</code> — its API: permission check, stored document, audit line</li>
+        <li><code>api/_tests/hello-intranet.test.js</code> — who may read and write</li>
+        <li>An entry in access management — open or restricted, and its tile</li>
+      </ol>
+    </section>
+  </div>
+</main>
+
+<script>
+const API = "/api/HelloIntranet";
+const $ = (id) => document.getElementById(id);
+
+function render(state) {
+  $("count").textContent = state.count;
+  $("hello").disabled = !state.canWrite;
+  $("status").textContent = !state.canWrite ? "You may look, but saying hello needs write access."
+    : state.last ? "Last hello from " + state.last.name + ", " + new Date(state.last.at).toLocaleString() + "."
+    : "Nobody has said hello yet. Be the first.";
+}
+
+async function call(method) {
+  const res = await fetch(API, { method });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || "Request failed (" + res.status + ")");
+  return body;
+}
+
+call("GET").then(render).catch((err) => {
+  $("count").textContent = "–";
+  $("status").textContent = "Could not load: " + err.message + " Reload the page to try again.";
+});
+
+$("hello").addEventListener("click", async () => {
+  $("hello").disabled = true;
+  try { render(await call("POST")); }
+  catch (err) { $("status").textContent = "That did not work: " + err.message; $("hello").disabled = false; }
+});
+</script>
+</body>
+</html>
