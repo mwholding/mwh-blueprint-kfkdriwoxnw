@@ -24,6 +24,31 @@ HTML, CSS and JavaScript, and Node functions under `api/` with their own tests
 branch to one preview environment. Running cost is the Standard plan plus cents of storage,
 plus your AI usage under your own Langdock contract.
 
+> **Tied to Azure and Entra ID? Less than it looks.** Most of the intranet is plain Node
+> with no cloud dependency: the access rules, user apps, the MCP server and its tools. The
+> platform is in a few small places:
+>
+> - **Storage**: two modules, `api/_shared/jsonStore.js` and `api/_shared/blobFiles.js`.
+>   For S3 or another object store, you rewrite those two. The data is JSON documents and
+>   files, which copy across unchanged.
+> - **Sign-in and page protection**: Azure Static Web Apps (`staticwebapp.config.json`,
+>   `/api/GetRoles`, `/.auth/me`). The functions only read the person's email address
+>   (`api/_shared/roles.js`), and access is granted by email, so the access document
+>   carries over to any identity provider.
+> - **Functions**: ten small Azure Functions with the standard `(context, req)` handler.
+>
+> **Another identity provider** is mostly configuration. On-premises Active Directory is
+> normally synced to Entra already, so nothing changes. Google, Okta or any other OpenID
+> Connect provider replaces the Entra block in `staticwebapp.config.json`. The MCP token
+> check (`api/_shared/verifyToken.js`) is written for Entra and has to be adapted. Google
+> issues no JWT access tokens for your own APIs, so with Google you need a broker in
+> between, for example Auth0, Okta or Keycloak.
+>
+> **Another platform, such as AWS**, is a planned project, not a switch: you rebuild sign-in
+> and per-path protection (for example Cognito with CloudFront), wrap the functions for
+> Lambda and rewrite the two storage modules. Expect days to two weeks of developer time,
+> not a rewrite of the intranet.
+
 ## The MCP server
 
 `/api/mcp` is a remote MCP server (stateless Streamable HTTP, JSON-RPC: `initialize`,
