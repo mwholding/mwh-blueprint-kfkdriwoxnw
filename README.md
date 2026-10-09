@@ -1,13 +1,13 @@
-# Intranet blueprint
+# Intranet blueprint: MCP and vibe coding apps
 
-A secure company portal connected to Langdock. Colleagues sign in once with their Microsoft
+A secure company portal for connecting Langdock via MCP and hosting vibe coding apps. Colleagues sign in once with their Microsoft
 work account and see every app they may use on one home page. They build small apps of their
 own by describing them in Langdock, and they work with connected apps and data by asking
 Langdock instead of clicking through screens.
 
 This repository is a GitHub template. To get your own intranet, follow [SETUP.md](SETUP.md).
 
-## What you get
+## Repository overview: What you get
 
 - A home page with one tile per app a person may open, and nothing else.
 - Sign-in with the Microsoft work account people already use.
@@ -16,9 +16,9 @@ This repository is a GitHub template. To get your own intranet, follow [SETUP.md
 - A Langdock connection that lets people work with the intranet by asking questions.
 - Access management in the browser: who may open which app, set by administrators.
 - AI inside apps, without any key reaching the browser.
-- Your name, logo, colour and font, set in one file.
+- Your name, logo, colour and font, all configured in one file.
 
-## The Langdock connection
+## MCP: The Langdock connection
 
 The intranet is connected to Langdock through MCP, the Model Context Protocol. MCP is an open
 standard that lets an AI assistant use another system's functions on behalf of the person
@@ -50,9 +50,8 @@ connected this way are reachable from Langdock. Typical extensions:
   person may not do on the website, they cannot do through Langdock either. Every server
   function checks permissions itself on each request, and a change takes effect within 30
   seconds.
-- **No secrets in the browser.** Keys and passwords stay on the server. User apps reach AI
-  only through the intranet, which holds the key, adds a safety instruction and caps usage
-  at 200 requests per person per day.
+- **No secrets in the browser.** Keys and passwords stored encrypted on the server. User apps reach AI
+  only through the intranet, which adds a safety instruction and caps usage.
 - **Changes are logged.** Every change to access settings, every change to a user app and
   every AI request is recorded with the verified email address of the person and the time.
 - **User apps are private by default.** Their owner decides whether to share them with
@@ -60,19 +59,15 @@ connected this way are reachable from Langdock. Typical extensions:
 
 ## Recommended way of working
 
-Start in Langdock. Wherever you would normally send round a presentation, an Excel file or
+Start in Langdock. Wherever you would normally send a presentation, an Excel file or
 an HTML file, describe a user app instead: a form, a checklist, a tracker, a calculator. It
 is live within a minute at a fixed address, keeps its data in one place and can use AI.
-Change it with another message. The last 20 versions are kept, so an earlier one can always
+Change it with another message, and share it internally as needed. The last 20 versions are kept, so an earlier one can always
 be brought back.
 
-When a user app is not enough, build an intranet app. It allows a richer interface, more
+When a user app is not enough, you can also build an intranet app. It allows a richer interface, more
 complex data handling, finer permissions and connections to internal systems such as an ERP
 export or an internal API.
-
-Do not rebuild what Microsoft 365 already does. Documents belong in SharePoint, dashboards
-in Power BI and approvals in Power Automate. Add a link to them as a tile on the home page
-instead.
 
 ## Setup
 
@@ -81,11 +76,10 @@ Press **Use this template** on GitHub to create your organisation's own copy, th
 Azure knowledge.
 
 The intranet runs on Azure today: Azure Static Web Apps for the website and its server
-functions, Azure Storage for data and files, Microsoft Entra ID for sign-in. There is no
-database, no server to maintain and no build step. Running costs are the Static Web Apps
+functions, Azure Storage for data and files, Microsoft Entra ID for sign-in. Running costs are the Static Web Apps
 Standard plan, a few cents of storage and your Langdock usage.
 
-It is not tied to Azure. Sign-in, hosting and storage each sit in a few clearly separated
+> It is not tied to Azure. Sign-in, hosting and storage each sit in a few clearly separated
 places, so moving to AWS, Google Cloud or another sign-in provider is a manageable project,
 especially with an AI coding assistant.
 
@@ -100,22 +94,11 @@ can be as short as this:
 > Everyone may read it. Only the group Store Operations may edit entries. Add Langdock tools
 > so people can ask for a store's contact details.
 
-Afterwards:
-
-1. **Try it on the preview site.** Every branch other than `main` is deployed there.
-2. **Publish it** by merging into `main`. The tests run before every deploy.
-3. **Register it** in access management under Apps. Until then nobody can open it, not even
-   you. Choose open or restricted, and the tile text for the home page.
-4. **Give the group its rights** in access management under Groups, for example write access
-   for Store Operations.
-5. **Re-sync the integration in Langdock** if the app adds Langdock tools, so Langdock sees
-   them.
+Afterwards, you can test and deploy the application with your chosen access rights.
 
 ## Configuration
 
-Everything that makes the intranet yours is in `site.config.json`. Edit it and push to
-`main`. The file is never sent to browsers; pages receive only the name, tagline and
-Langdock link.
+Everything that makes the intranet yours is in `site.config.json`.
 
 | Setting | What it does |
 |---|---|
