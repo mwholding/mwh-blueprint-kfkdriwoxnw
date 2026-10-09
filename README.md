@@ -1,188 +1,129 @@
 # Intranet blueprint
 
-**This repository is a GitHub template.** Press **Use this template** to give your
-organisation its own copy ([SETUP.md](SETUP.md), step 1), then make that copy yours. Do not
-develop in the template itself.
+A secure company portal connected to Langdock. Colleagues sign in once with their Microsoft
+work account and see every app they may use on one home page. They build small apps of their
+own by describing them in Langdock, and they work with connected apps and data by asking
+Langdock instead of clicking through screens.
 
-## What it is
+This repository is a GitHub template. To get your own intranet, follow [SETUP.md](SETUP.md).
 
-An intranet with two front doors and one set of permissions:
+## What you get
 
-- **The browser**: colleagues sign in with their Microsoft work account, and the home page
-  shows every app they may open, as tiles.
-- **The chat**: the intranet is an **MCP server** at `/api/mcp`. Connected to Langdock, it
-  lets colleagues work with the intranet from a chat: ask who they are and what they may
-  open, and build, change and share their own apps by describing them.
+- A home page with one tile per app a person may open, and nothing else.
+- Sign-in with the Microsoft work account people already use.
+- User apps: small tools any colleague builds in Langdock in minutes, without a developer.
+- Intranet apps: larger tools built in this repository, for what user apps cannot do.
+- A Langdock connection that lets people work with the intranet by asking questions.
+- Access management in the browser: who may open which app, set by administrators.
+- AI inside apps, without any key reaching the browser.
+- Your name, logo, colour and font, set in one file.
 
-Both doors use the same Entra ID sign-in and the same access rules. Whatever a person may
-not do in the browser, they cannot do from the chat either.
+## The Langdock connection
 
-**What it runs on:** Azure Static Web Apps (Standard plan), its managed Azure Functions, one
-Azure Storage account and Microsoft Entra ID. No server, no database, no build step: plain
-HTML, CSS and JavaScript, and Node functions under `api/` with their own tests
-(`cd api && npm test`). The GitHub workflow deploys `main` to production and every other
-branch to one preview environment. Running cost is the Standard plan plus cents of storage,
-plus your AI usage under your own Langdock contract.
+The intranet is connected to Langdock through MCP, the Model Context Protocol. MCP is an open
+standard that lets an AI assistant use another system's functions on behalf of the person
+asking: look something up, list items, create or change a record. The intranet offers these
+functions, called tools, and Langdock calls them when a question needs them. Each tool checks
+who is asking and what they may do.
 
-> **None of this is set in stone.** Identity, hosting and storage each sit in a few clearly
-> separated places, and with a coding agent, swapping one of them (another identity
-> provider, another cloud, another store) is far less work than it used to be.
+Today the connection offers two things: telling people who they are and which apps they may
+open, and building, changing, sharing and deleting their own user apps.
 
-## The MCP server
+It is built to be extended. Any intranet app can add tools of its own, and only the apps
+connected this way are reachable from Langdock. Typical extensions:
 
-`/api/mcp` is a remote MCP server (stateless Streamable HTTP, JSON-RPC: `initialize`,
-`tools/list`, `tools/call`). Langdock connects to it with OAuth against your Entra app
-registration; SETUP.md step 9 is the setup.
+- **Search** a knowledge base: "What is our process for returning a damaged delivery?"
+- **List** from an internal app: "Which store openings are planned for next quarter?"
+- **Create** in an internal tool: "Open an IT request: the receipt printer in store 12 is broken."
+- **Update** company information: "Set the Lisbon renovation project to completed."
 
-**Tools today**
+## Security and access
 
-| Tool | What it does | Who may use it |
-|---|---|---|
-| `whoami` | the caller's verified email, membership and the apps they may open | everyone signed in |
-| `get_user_app_guide` | the rules a generated app must follow: CSP, identity, data store, AI, design | everyone signed in |
-| `create_user_app` | builds a new app from files; it is live at once, private to its owner | everyone signed in |
-| `list_user_apps` | the apps the caller owns or may open | everyone signed in |
-| `get_user_app` | an app's details, versions and, on request, its files | the owner |
-| `update_user_app` | a new version with changed files or name | the owner |
-| `rollback_user_app` | brings an earlier version back as a new one | the owner |
-| `set_user_app_access` | private, everyone, or named people | the owner |
-| `delete_user_app` | removes the app and its data | the owner |
+- **Single sign-on.** Everyone signs in with their Microsoft work account. Your Microsoft
+  Entra ID settings decide who may sign in at all.
+- **Access per app.** Every app is either open to everyone who may sign in, or restricted to
+  the groups you name. An app nobody has registered cannot be opened by anyone.
+- **Permissions managed in the browser.** Administrators maintain groups, members and rights
+  in access management. Groups can include people by name or everyone with a given email
+  domain. No code change and no deploy is needed.
+- **The same rules everywhere.** The website and Langdock check the same permissions. What a
+  person may not do on the website, they cannot do through Langdock either. Every server
+  function checks permissions itself on each request, and a change takes effect within 30
+  seconds.
+- **No secrets in the browser.** Keys and passwords stay on the server. User apps reach AI
+  only through the intranet, which holds the key, adds a safety instruction and caps usage
+  at 200 requests per person per day.
+- **Changes are logged.** Every change to access settings, every change to a user app and
+  every AI request is recorded with the verified email address of the person and the time.
+- **User apps are private by default.** Their owner decides whether to share them with
+  everyone or with named colleagues.
 
-**How it is secured**
+## Recommended way of working
 
-- The route is anonymous on purpose: the function itself verifies an Entra ID token
-  (tenant, signature, issuer, audience) on every call. There is no session.
-- Every tool checks permissions itself, live, against the same access document the
-  browser uses. A permission change reaches the chat within 30 seconds.
-- Langdock sends the token in `X-Mcp-Authorization`, because Azure Static Web Apps replaces
-  the standard `Authorization` header on managed functions.
+Start in Langdock. Wherever you would normally send round a presentation, an Excel file or
+an HTML file, describe a user app instead: a form, a checklist, a tracker, a calculator. It
+is live within a minute at a fixed address, keeps its data in one place and can use AI.
+Change it with another message. The last 20 versions are kept, so an earlier one can always
+be brought back.
 
-**Limits to know**
+When a user app is not enough, build an intranet app. It allows a richer interface, more
+complex data handling, finer permissions and connections to internal systems such as an ERP
+export or an internal API.
 
-- Langdock cuts every tool description at 1024 characters. Longer rules go into a tool that
-  returns them (that is what `get_user_app_guide` is for); a test checks the length.
-- Langdock allows about 50 tools per connection.
-- Langdock keeps its own copy of the tool list: after any change to a tool, re-sync the
-  integration in Langdock.
+Do not rebuild what Microsoft 365 already does. Documents belong in SharePoint, dashboards
+in Power BI and approvals in Power Automate. Add a link to them as a tile on the home page
+instead.
 
-## Two kinds of app
+## Setup
 
-Both show up as tiles on the home page.
+Press **Use this template** on GitHub to create your organisation's own copy, then follow
+[SETUP.md](SETUP.md). It takes about an hour, mostly forms in web portals, and assumes no
+Azure knowledge.
 
-| | **User apps** | **Intranet apps** |
-|---|---|---|
-| Who builds it | any colleague, through the MCP tools in a Langdock chat | a developer or a coding assistant, in this repository |
-| How long it takes | minutes | days |
-| Where it lives | Blob Storage, served live at `/api/a/<name>/` | a folder `apps/<name>/`, deployed with a push to `main` |
-| Who may open it | private at first; the owner shares it with everyone or with named people | decided in access management: open to everyone, or to groups |
-| What it can do | a form, a list, a checklist, a calculator; its own storage and files; AI; the visitor's identity | everything a user app can, plus its own server code and its own MCP tools |
-| Good for | one team's small tool | something many people rely on, or that needs data from elsewhere |
+The intranet runs on Azure today: Azure Static Web Apps for the website and its server
+functions, Azure Storage for data and files, Microsoft Entra ID for sign-in. There is no
+database, no server to maintain and no build step. Running costs are the Static Web Apps
+Standard plan, a few cents of storage and your Langdock usage.
 
-Start with a user app. Build an intranet app only when a user app cannot do the job.
+It is not tied to Azure. Sign-in, hosting and storage each sit in a few clearly separated
+places, so moving to AWS, Google Cloud or another sign-in provider is a manageable project,
+especially with an AI coding assistant.
 
-**Also in the box**
+## Building an intranet app
 
-- **Access management** (`/apps/access-admin/`): groups, permissions, one open or restricted
-  switch per app, and the home page tiles. All in the browser, no deploy.
-- **AI without keys in the browser**: user apps call `/api/AppAI`, which holds the one
-  Langdock key, adds a safety preamble, caps usage and keeps an audit line per call.
+Use an AI coding assistant such as Claude Code or Codex. It reads [AGENTS.md](AGENTS.md),
+which holds the rules of this codebase, and copies the example app Hello Intranet. A request
+can be as short as this:
 
-## How access works, in four sentences
+> Build an intranet app "store-contacts" following AGENTS.md, based on Hello Intranet. It
+> lists every store with its manager, phone number and email address, searchable by city.
+> Everyone may read it. Only the group Store Operations may edit entries. Add Langdock tools
+> so people can ask for a store's contact details.
 
-Every app has **one switch**: open (everyone who may sign in) or restricted (only the groups
-you name). The home page has the same switch; whoever may not use it is an **app-only
-guest** who can still open the apps given to them by link. Pages are checked at sign-in, so
-a change reaches a page at the person's next sign-in; the functions and the MCP tools check
-live, so a change reaches them within 30 seconds. Nothing about access is in the
-repository: it lives in one document in Blob Storage, edited in access management.
+Afterwards:
+
+1. **Try it on the preview site.** Every branch other than `main` is deployed there.
+2. **Publish it** by merging into `main`. The tests run before every deploy.
+3. **Register it** in access management under Apps. Until then nobody can open it, not even
+   you. Choose open or restricted, and the tile text for the home page.
+4. **Give the group its rights** in access management under Groups, for example write access
+   for Store Operations.
+5. **Re-sync the integration in Langdock** if the app adds Langdock tools, so Langdock sees
+   them.
 
 ## Configuration
 
-Everything that makes the intranet yours is in **`site.config.json`** at the repository
-root. Edit it, push to `main`, done.
+Everything that makes the intranet yours is in `site.config.json`. Edit it and push to
+`main`. The file is never sent to browsers; pages receive only the name, tagline and
+Langdock link.
 
 | Setting | What it does |
 |---|---|
-| `name`, `tagline` | the headline and the sentence under it; the name is also what the AI is told hosts the apps |
-| `adminEmails` | one or two addresses that always hold every permission: how the first sign-in works, and the way back in after a mistake. Everyone else is managed in access management |
-| `langdock.url`, `langdock.integrationName` | where the "Build an app" button goes, and the name of the MCP integration people tag in a chat (`@Intranet`) |
+| `name`, `tagline` | the headline and the sentence under it; the name also tells the AI which intranet hosts the apps |
+| `adminEmails` | one or two addresses that always hold every permission: how the first sign-in works, and the way back in after a mistake |
+| `langdock.url`, `langdock.integrationName` | where the "Build an app" button leads, and the name people tag in Langdock (`@Intranet`) |
 | `langdock.model` | the AI model user apps use |
-| `brand.accent`, `brand.font` | the one accent colour (buttons, links, focus; its lighter shades are derived) and the font stack. The greys are fixed neutrals. Replace `assets/logo.svg` and `assets/favicon.svg` for your own logo and icon |
-
-The file itself is never served to browsers: the pages get only the name, tagline and
-Langdock link, through `/api/Site`.
-
-## Adding an app
-
-### A user app: first choice
-
-The example **Hello Langdock** on the home page is one: the visitor's name, a shared counter
-and an AI question, built the way any colleague would build theirs.
-
-On the home page, press **Build an app in Langdock** (or tag `@Intranet` in a Langdock
-chat) and describe the tool in plain words. The model reads `get_user_app_guide`, calls
-`create_user_app`, and the app is live a minute later as a tile on your home page. It is
-private until you say "share it with everyone" or "share it with anna@… and ben@…". Change it
-with another message; every version is kept, so "roll back to the previous version" always
-works.
-
-A user app is a static web page with, built in: the visitor's verified email, a shared
-key-value and file store (300 keys, files up to 8 MB), AI through `/api/AppAI`, and an audit
-line for every change. It cannot hold credentials, reach other systems or run on a
-schedule. That is where an intranet app starts.
-
-### An intranet app: for the more complex cases
-
-Build one when the tool needs any of these: data from another system (an ERP export, a
-nightly file, an API with a key), server-side logic or checks, permissions finer than
-"who may open it", data many people edit at once, or something scheduled. Do not rebuild
-what Microsoft 365 already does: a document library is SharePoint, a dashboard is Power BI,
-an approval is Power Automate, and a link tile to it is the better intranet.
-
-The example **Hello Intranet** (`apps/hello-intranet/`, `api/HelloIntranet/`,
-`api/_tests/hello-intranet.test.js`) is the smallest complete one: copy those three and
-rename. You need a code editor such as Visual Studio Code, or a coding assistant such as
-Claude Code.
-
-1. **A folder** `apps/<id>/index.html`. The `<id>` is permanent: it is the address, the
-   role and the registry key (lowercase, hyphens). Link `/assets/app-kit.css` first and
-   copy the header from `apps/hello-intranet/index.html`.
-2. **Functions** under `api/<AppName>/` (`function.json` + `index.js`), one folder per
-   endpoint, shared code in `api/_shared/<id>/`. Every function checks permissions itself;
-   the page's route rule does not protect the API:
-
-   ```js
-   const { getUserEmail } = require("../_shared/roles");
-   const { canUseAnyApp, can } = require("../_shared/access");
-
-   module.exports = async function (context, req) {
-     const email = getUserEmail(req);
-     if (!(await canUseAnyApp(email, ["<id>"]))) return void (context.res = { status: 403 });
-     if (req.method !== "GET" && !(await can(email, "<id>", "write"))) return void (context.res = { status: 403 });
-     // …
-   };
-   ```
-
-   `canUseAnyApp` follows the app's open or restricted switch. `can` asks for a group grant
-   and ignores the switch: use it for what an open app must not give to everyone, like
-   editing.
-3. **Data**: small datasets as one JSON document in Blob Storage, written with
-   `api/_shared/jsonDoc.js` so two people saving at once never lose a change, plus an audit
-   line per write (`appendAuditLine`). Files through `api/_shared/blobFiles.js`. Secrets are
-   Azure app settings, never files.
-4. **Register it** in access management → **Apps** → **New**: name, path `/apps/<id>/`, open
-   or restricted, and the tile text. Until then nobody can open it, you included.
-5. **Push.** The route rule for the folder is generated on deploy, and the tests run first.
-   Add a test for your permission checks to `api/_tests/` (copy `access.test.js`).
-6. **Make it usable from the chat** (optional): put its tools in `api/_shared/<id>/tools.js`
-   with the same shape as `api/_shared/user-apps/tools.js` (`TOOLS`, `handles`, `call`) and
-   wire them into `api/Mcp/index.js`. Each tool checks permissions itself with the same
-   helpers as step 2, and carries `annotations` (`readOnlyHint`, `destructiveHint`). The
-   description is the only documentation the model gets, so say what the tool does, when to
-   use it and what it returns, in 1024 characters. Then re-sync the integration in Langdock.
-7. **AI** (optional): `chatComplete` from `api/_shared/langdock.js`, never from the browser.
-
-A coding assistant does this well: [AGENTS.md](AGENTS.md) holds the rules it follows.
+| `brand.accent`, `brand.font` | the accent colour (its lighter shades are derived) and the font. Replace `assets/logo.svg` and `assets/favicon.svg` for your logo and icon |
 
 ## Files at a glance
 
@@ -190,14 +131,14 @@ A coding assistant does this well: [AGENTS.md](AGENTS.md) holds the rules it fol
 |---|---|
 | `site.config.json` | everything you configure |
 | `index.html` | the home page: all apps as tiles |
-| `api/Mcp/` | the MCP server: the tool list and `whoami` |
-| `api/_shared/mcp/server.js` | the JSON-RPC responder behind it |
-| `api/_shared/verifyToken.js` | the Entra token check for MCP calls |
-| `api/_shared/user-apps/` | the user-app tools, storage and access; `examples/` holds Hello Langdock |
 | `apps/access-admin/` | access management |
-| `apps/hello-intranet/` + `api/HelloIntranet/` | the example intranet app, to copy |
-| `api/` | the functions; `api/_shared/` shared code; `api/_tests/` the tests |
+| `apps/hello-intranet/` and `api/HelloIntranet/` | the example intranet app, to copy |
+| `api/` | the server functions; `api/_shared/` shared code; `api/_tests/` the tests |
+| `api/Mcp/` | the Langdock connection: the tool list and `whoami` |
+| `api/_shared/mcp/server.js` | the protocol handling behind it |
+| `api/_shared/verifyToken.js` | the sign-in check for Langdock requests |
+| `api/_shared/user-apps/` | the user-app tools, storage and access; `examples/` holds Hello Langdock |
 | `assets/` | `app-kit.css` (the look), `brand.css` (generated), `app-sdk.js` (helpers for user apps), logo, icon |
-| `misc/` | `access-generate-routes.js`, `site-generate-brand.js`, `access-error.html` and `not-found.html` |
-| [SETUP.md](SETUP.md) | setting it up, click by click; step 9 connects Langdock |
+| `misc/` | route and brand generators, and the error pages |
+| [SETUP.md](SETUP.md) | the setup, step by step |
 | [AGENTS.md](AGENTS.md) | the rules of this codebase, for developers and coding assistants |
